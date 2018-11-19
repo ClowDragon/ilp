@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
         status = findViewById(id.statusTextView) as TextView
         logout = findViewById(id.singoutButton) as Button
 
-        logout.setOnClickListener(){
+        logout.setOnClickListener {
             auth.signOut()
             val intent = Intent(this@MainActivity, LoginActivity::class.java)
             startActivity(intent)
