@@ -14,4 +14,6 @@
     <string name="btn_link_to_login">Already registered? Log in Coinz!</string>
     <string name="btn_sign_out">Sign Out</string>
     <string name="hint_new_email">New Email</string>
+    <string name="store">store</string>
+    <string name="wallet">wallet</string>
 </resources>

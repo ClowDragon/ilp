@@ -12,10 +12,16 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.example.chris.ilp.R.*
+import com.example.chris.ilp.R.id.displayName
+import com.google.firebase.auth.FirebaseUser
+
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var displayName: TextView
     private lateinit var logout: Button
+    private lateinit var store: Button
+    private lateinit var wallet:Button
     private lateinit var auth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
 
@@ -28,6 +34,10 @@ class MainActivity : AppCompatActivity() {
 
         displayName = findViewById(id.nameTextView) as TextView
         logout = findViewById(id.signoutButton) as Button
+        store = findViewById(id.storeButton) as Button
+        wallet = findViewById(id.walletButton) as Button
+
+        isLogin()
 
         logout.setOnClickListener {
             auth.signOut()
@@ -35,10 +45,8 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
-
-        isLogin()
-
     }
+
 
     private fun isLogin(){
         val intent = Intent(this@MainActivity, LoginActivity::class.java)
@@ -49,22 +57,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadData(userId: String){
         val dataListener = object : ValueEventListener{
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                if(dataSnapshot.exists()){
-                    var user: User = dataSnapshot.getValue(User::class.java)
-                    displayName.text = user.displayName
-                }
-
-            }
-
-            override fun onCancelled(p0: DatabaseError?) {
-                //
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+        if(dataSnapshot.exists()){
+            var user: User = dataSnapshot.getValue(User::class.java)
+            displayName.text = user.displayName
             }
         }
-        database.reference.child("user")
-                .child(userId).addListenerForSingleValueEvent(dataListener)
 
+        override fun onCancelled(p0: DatabaseError?) {
+
+        }
+
+        }
+        database.reference.child("users").child(userId).addListenerForSingleValueEvent(dataListener)
     }
-
-
 }
