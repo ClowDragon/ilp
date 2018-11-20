@@ -6,8 +6,9 @@
     <string name="title_activity_login">Sign in</string>
     <string name="hint_email">Email</string>
     <string name="hint_password">Password</string>
-    <string name="hint_name">Full name</string>
-    <string name="btn_login">LOGIN</string>
+    <string name="hint_name">Your Name</string>
+    <string name="btn_login">Login</string>
+    <string name="btn_logout">Logout</string>
     <string name="btn_register">Register</string>
     <string name="btn_link_to_register">Not a member? Get registered in Coinz!</string>
     <string name="btn_link_to_login">Already registered? Log in Coinz!</string>

@@ -15,7 +15,6 @@ import com.example.chris.ilp.R.*
 
 class MainActivity : AppCompatActivity() {
     private lateinit var displayName: TextView
-    private lateinit var status: TextView
     private lateinit var logout: Button
     private lateinit var auth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
@@ -28,8 +27,7 @@ class MainActivity : AppCompatActivity() {
         database = FirebaseDatabase.getInstance()
 
         displayName = findViewById(id.nameTextView) as TextView
-        status = findViewById(id.statusTextView) as TextView
-        logout = findViewById(id.singoutButton) as Button
+        logout = findViewById(id.signoutButton) as Button
 
         logout.setOnClickListener {
             auth.signOut()
@@ -55,7 +53,6 @@ class MainActivity : AppCompatActivity() {
                 if(dataSnapshot.exists()){
                     var user: User = dataSnapshot.getValue(User::class.java)
                     displayName.text = user.displayName
-                    status.text = user.status
                 }
 
             }
