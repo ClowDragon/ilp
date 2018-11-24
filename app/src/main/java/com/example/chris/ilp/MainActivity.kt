@@ -53,7 +53,8 @@ class MainActivity : AppCompatActivity() {
         store = findViewById(id.storeButton) as Button
         wallet = findViewById(id.walletButton) as Button
 
-        isLogin()
+        myTask.execute(mapURL)
+
 
         logout.setOnClickListener {
             val userId = auth.currentUser?.uid
@@ -67,11 +68,9 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onStart() {
-        val intent = Intent(this@MainActivity, LoginActivity::class.java)
-        myTask.execute(mapURL)?:startActivity(intent)
         super.onStart()
         // Restore preferences
-
+        isLogin()
 
         //myTask.execute(mapURL)
         val file = File(applicationContext.filesDir, "coinzmap" + ".geojson")
