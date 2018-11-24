@@ -2,17 +2,18 @@ package com.example.chris.ilp
 
 import android.content.Context
 import android.content.Intent
+import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import com.example.chris.ilp.R.*
+import com.google.firebase.database.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -20,11 +21,13 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private lateinit var displayName: TextView
+    private lateinit var status:TextView
     private lateinit var logout: Button
     private lateinit var store: Button
     private lateinit var wallet:Button
     private lateinit var auth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
+    private lateinit var dbRef: DatabaseReference
     private var downloadDate = "" // Format: YYYY/MM/DD
     private val preferencesFile = "MyPrefsFile" // for storing preferences
     private val tag = "MainActivity"
@@ -33,19 +36,28 @@ class MainActivity : AppCompatActivity() {
     private val dateInString = date.toString("yyyy/MM/dd")
     private val mapURL = "http://homepages.inf.ed.ac.uk/stg/coinz/"+dateInString+"/coinzmap.geojson"
 
+    val runner = DownloadCompleteRunner
+    val myTask = DownloadFileTask(runner)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_main)
 
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
+        dbRef = database.reference
 
-        displayName = findViewById(id.nameTextView) as TextView
+        displayName = findViewById(id.name_text) as TextView
+        status = findViewById(id.status_text) as TextView
         logout = findViewById(id.signoutButton) as Button
         store = findViewById(id.storeButton) as Button
         wallet = findViewById(id.walletButton) as Button
 
+        isLogin()
+
         logout.setOnClickListener {
+            val userId = auth.currentUser?.uid
+            dbRef.child("users").child(userId).child("status").setValue("signed_out")
             auth.signOut()
             val intent = Intent(this@MainActivity, LoginActivity::class.java)
             startActivity(intent)
@@ -55,9 +67,16 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onStart() {
+        val intent = Intent(this@MainActivity, LoginActivity::class.java)
+        myTask.execute(mapURL)?:startActivity(intent)
         super.onStart()
         // Restore preferences
-        isLogin()
+
+
+        //myTask.execute(mapURL)
+        val file = File(applicationContext.filesDir, "coinzmap" + ".geojson")
+        file.createNewFile()
+
 
         val settings = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
         // use ”” as the default value (this might be the first time the app is run)
@@ -65,16 +84,8 @@ class MainActivity : AppCompatActivity() {
         // Write a message to ”logcat” (for debugging purposes)
         Log.d(tag, "[onStart] Recalled lastDownloadDate is ’$downloadDate’")
 
-        val runner = DownloadCompleteRunner
-        val myTask = DownloadFileTask(runner)
-        myTask.execute(mapURL)
 
 
-        val file = File(applicationContext.filesDir, "coinzmap"+".geojson")
-        file.createNewFile()
-        applicationContext.openFileOutput("coinzmap.geojson", Context.MODE_PRIVATE).use {
-            it.write(runner.result?.toByteArray())
-        }
     }
 
 
@@ -107,6 +118,10 @@ class MainActivity : AppCompatActivity() {
         if(dataSnapshot.exists()){
             val user: User = dataSnapshot.getValue(User::class.java)
             displayName.text = user.displayName
+            status.text = user.status
+            applicationContext.openFileOutput("coinzmap.geojson", Context.MODE_PRIVATE).use {
+                it.write(user.map.toByteArray())
+            }
 
             }
         }
@@ -129,4 +144,3 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
-

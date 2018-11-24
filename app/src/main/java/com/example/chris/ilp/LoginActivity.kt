@@ -11,6 +11,8 @@ import com.example.chris.ilp.R.*
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
@@ -18,6 +20,8 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var email: EditText
     private lateinit var password: EditText
     private lateinit var registerButton: Button
+    private lateinit var database: FirebaseDatabase
+    private lateinit var dbRef: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +45,8 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             auth = FirebaseAuth.getInstance()
+            database = FirebaseDatabase.getInstance()
+            dbRef = database.reference
             auth.signInWithEmailAndPassword(email.text.toString(), password.text.toString()).
                     addOnCompleteListener { task: Task<AuthResult> ->
                         if (!task.isSuccessful) run {
@@ -52,6 +58,8 @@ class LoginActivity : AppCompatActivity() {
                             }
                         }
                         else{
+                            val userId = auth.currentUser?.uid
+                            dbRef.child("users").child(userId).child("status").setValue("signed_in")
                             val intentToMain = Intent(this@LoginActivity, MainActivity::class.java)
                             startActivity(intentToMain)
                         }

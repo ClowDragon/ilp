@@ -7,6 +7,7 @@
     <string name="hint_email">Email</string>
     <string name="hint_password">Password</string>
     <string name="hint_name">Your Name</string>
+    <string name="hint_status">status</string>
     <string name="btn_login">Login</string>
     <string name="btn_logout">Logout</string>
     <string name="btn_register">Register</string>
