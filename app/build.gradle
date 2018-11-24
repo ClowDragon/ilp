@@ -32,6 +32,8 @@ dependencies {
     testCompile 'junit:junit:4.12'
     debugCompile 'com.android.support.test:runner:0.5'
     androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
+    compile 'com.google.android.gms:play-services-maps:10.0.0'
+    compile 'com.jakewharton.threetenabp:threetenabp:1.0.3'
 }
 repositories {
     mavenCentral()

@@ -10,9 +10,10 @@
 
     <TextView
         android:id="@+id/nameTextView"
-        android:layout_width="140dp"
-        android:layout_height="27dp"
+        android:layout_width="103dp"
+        android:layout_height="30dp"
         android:layout_marginTop="4dp"
+        android:layout_marginBottom="45dp"
         android:text="@string/hint_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -51,5 +52,6 @@
         app:layout_constraintEnd_toStartOf="@+id/storeButton"
         app:layout_constraintHorizontal_bias="0.4"
         app:layout_constraintStart_toStartOf="parent" />
+
 
 </android.support.constraint.ConstraintLayout>
