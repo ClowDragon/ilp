@@ -10,13 +10,14 @@ import android.widget.TextView
 import com.google.firebase.auth.FirebaseAuth
 import com.example.chris.ilp.R.*
 import com.google.firebase.database.*
+import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.maps.MapView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-
 
 class MainActivity : AppCompatActivity() {
     private lateinit var displayName: TextView
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
     private lateinit var dbRef: DatabaseReference
+    private lateinit var mapView: MapView
     private var downloadDate = "" // Format: YYYY/MM/DD
     private val preferencesFile = "MyPrefsFile" // for storing preferences
     private val tag = "MainActivity"
@@ -41,6 +43,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_main)
+
+        Mapbox.getInstance(applicationContext,getString(R.string.access_token))
+        mapView = findViewById(R.id.mapView)
+        mapView.onCreate(savedInstanceState)
+
 
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()

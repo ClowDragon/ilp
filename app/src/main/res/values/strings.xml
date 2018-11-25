@@ -17,4 +17,5 @@
     <string name="hint_new_email">New Email</string>
     <string name="store">store</string>
     <string name="wallet">wallet</string>
+    <string name="access_token">pk.eyJ1Ijoic2Fpa3MiLCJhIjoiY2pvdzM5NnljMW50NDNrbGt3OHV4NzB6OSJ9._neFlogX3GGE1wBvyUjTdA</string>
 </resources>
