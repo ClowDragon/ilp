@@ -20,7 +20,11 @@ import com.mapbox.android.core.location.LocationEnginePriority
 import com.mapbox.android.core.location.LocationEngineProvider
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.geojson.Feature
+import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapView
@@ -78,7 +82,10 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         mapView.getMapAsync { mapboxMap ->
             map = mapboxMap
             enableLocation()
+            addMarkers()
         }
+
+
 
 
         auth = FirebaseAuth.getInstance()
@@ -218,6 +225,23 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         super.onLowMemory()
         mapView.onLowMemory()
     }
+
+    private fun addMarkers(){
+        val file = File(applicationContext.filesDir, "coinzmap" + ".geojson")
+        val geoString = file.readText()
+        val geojsonmap = FeatureCollection.fromJson(geoString)
+        val fcs = geojsonmap.features()
+        if (fcs != null) {
+            for(fc:Feature in fcs){
+                val geometry:Point = fc.geometry() as Point
+                val latitude = geometry.latitude()
+                val longitude = geometry.longitude()
+                val x = LatLng(latitude,longitude)
+                map.addMarker(MarkerOptions().position(x))
+            }
+        }
+    }
+
 
     private fun enableLocation(){
         if(PermissionsManager.areLocationPermissionsGranted(this)){
