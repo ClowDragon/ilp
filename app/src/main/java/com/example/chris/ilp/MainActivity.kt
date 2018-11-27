@@ -2,6 +2,8 @@ package com.example.chris.ilp
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Location
 import android.location.LocationListener
 import android.support.v7.app.AppCompatActivity
@@ -24,11 +26,14 @@ import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.annotations.Icon
+import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
@@ -46,6 +51,8 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     private lateinit var logout: Button
     private lateinit var store: Button
     private lateinit var wallet:Button
+    private lateinit var collectButton: Button
+    private lateinit var currentLocationButton: Button
 
     private lateinit var auth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
@@ -76,18 +83,6 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
 
         Toast.makeText(this@MainActivity,"successful logged in!",Toast.LENGTH_LONG).show()
 
-        Mapbox.getInstance(applicationContext,getString(R.string.access_token))
-        mapView = findViewById(R.id.mapView)
-        mapView.onCreate(savedInstanceState)
-        mapView.getMapAsync { mapboxMap ->
-            map = mapboxMap
-            enableLocation()
-            addMarkers()
-        }
-
-
-
-
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
         dbRef = database.reference
@@ -97,6 +92,8 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         logout = findViewById(id.signoutButton) as Button
         store = findViewById(id.storeButton) as Button
         wallet = findViewById(id.walletButton) as Button
+        collectButton = findViewById(id.collectButton) as Button
+        currentLocationButton = findViewById<Button>(id.currentLocationButton)
 
 
         val settings = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
@@ -116,6 +113,23 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             val intent = Intent(this@MainActivity, LoginActivity::class.java)
             startActivity(intent)
             finish()
+        }
+
+        collectButton.setOnClickListener {
+            collectCoin()
+        }
+
+        currentLocationButton.setOnClickListener {
+            setCameraPosition(originLocation)
+        }
+
+        Mapbox.getInstance(applicationContext,getString(R.string.access_token))
+        mapView = findViewById(R.id.mapView)
+        mapView.onCreate(savedInstanceState)
+        mapView.getMapAsync { mapboxMap ->
+            map = mapboxMap
+            enableLocation()
+            addMarkers()
         }
     }
 
@@ -237,10 +251,46 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
                 val latitude = geometry.latitude()
                 val longitude = geometry.longitude()
                 val x = LatLng(latitude,longitude)
-                map.addMarker(MarkerOptions().position(x))
+                val bitmap = BitmapFactory.decodeResource(applicationContext.resources,R.drawable.coin_marker)
+                val resized_bitmap = Bitmap.createScaledBitmap(bitmap,100,100,false)
+                //val coinicon = Icon("coin", bitmap)
+                val coinicon = IconFactory.recreate("coin", resized_bitmap)
+                map.addMarker(MarkerOptions().position(x).icon(coinicon))
             }
         }
     }
+
+
+    private fun collectCoin(){
+        val currentLocation = locationEngine?.lastLocation
+        val latitudeOfcurrentPoint = currentLocation?.latitude
+        val longitudeOfcurrentPoint = currentLocation?.longitude
+
+        val file = File(applicationContext.filesDir, "coinzmap" + ".geojson")
+        val geoString = file.readText()
+        val geojsonmap = FeatureCollection.fromJson(geoString)
+        val fcs = geojsonmap.features()
+        if (fcs != null) {
+            for(fc:Feature in fcs){
+                val geometry:Point = fc.geometry() as Point
+                val latitudeOfMark = geometry.latitude()
+                val longitudeOfMark = geometry.longitude()
+                val results = FloatArray(1)
+                Location.distanceBetween(latitudeOfcurrentPoint!!.toDouble(), longitudeOfcurrentPoint!!.toDouble(), latitudeOfMark, longitudeOfMark, results)
+                val distance = results[0]
+                val radius:Float = 25F
+                if(distance<radius){
+                    Toast.makeText(this@MainActivity,"You get a coin!",Toast.LENGTH_LONG).show()
+                }
+                else{
+
+                }
+            }
+        }
+
+    }
+
+
 
 
     private fun enableLocation(){
@@ -256,6 +306,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     private fun initializeLocationEngine(){
         locationEngine = LocationEngineProvider(this).obtainBestLocationEngineAvailable()
         locationEngine?.priority = LocationEnginePriority.HIGH_ACCURACY
+        locationEngine?.addLocationEngineListener(this)
         locationEngine?.activate()
 
         val lastLocation = locationEngine?.lastLocation
@@ -276,9 +327,8 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
 
     private fun setCameraPosition(location: Location){
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                LatLng(location.latitude,location.longitude),13.0))
+                LatLng(location.latitude,location.longitude),15.0))
     }
-
 
 
     override fun onExplanationNeeded(p0: MutableList<String>?) {
@@ -286,8 +336,8 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         Toast.makeText(this@MainActivity,"we need permission to access your location!",Toast.LENGTH_LONG).show()
     }
 
-    override fun onPermissionResult(p0: Boolean) {
-        if(p0){
+    override fun onPermissionResult(granted: Boolean) {
+        if(granted){
             enableLocation()
         }
     }
@@ -298,7 +348,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
 
 
     override fun onLocationChanged(location: Location?) {
-        location?.let{
+        location?.let {
             originLocation = location
             setCameraPosition(location)
         }
@@ -307,4 +357,5 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     override fun onConnected() {
         locationEngine?.requestLocationUpdates()
     }
+
 }

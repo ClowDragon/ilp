@@ -1,0 +1,9 @@
+<root>
+    <item
+        name='com.mapbox.mapboxsdk.annotations.Icon Icon(java.lang.String, android.graphics.Bitmap)'>
+        <annotation name='java.lang.Deprecated' />
+        <annotation name='org.jetbrains.annotations.Contract'>
+            <val name="pure" val="true" />
+        </annotation>
+    </item>
+</root>
