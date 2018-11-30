@@ -46,9 +46,6 @@ import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_wallet.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import java.io.File
 import java.text.SimpleDateFormat
@@ -87,6 +84,8 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
 
     val runner = DownloadCompleteRunner
     val myTask = DownloadFileTask(runner)
+
+    private var userCoins :String = "{\"features\":\"\"}"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -170,7 +169,10 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         }
         mapView.onStart()
         // Restore preferences
-        isLogin()
+        if (!lastdate.equals(dateInString)) {
+            isLogin()
+        }
+
         if (!lastdate.equals(dateInString)) {
             val file = File(applicationContext.filesDir, "coinzmap" + ".geojson")
             val geoString = file.readText()
@@ -179,11 +181,13 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             dbRef.child("users").child(auth.currentUser?.uid).child("rates").setValue(rateoftoday)
         }
 
-        val settings = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
         // use ”” as the default value (this might be the first time the app is run)
-        downloadDate = settings.getString("lastDownloadDate", "")
+        downloadDate = settings2.getString("lastDownloadDate", "")
         // Write a message to ”logcat” (for debugging purposes)
         Log.d(tag, "[onStart] Recalled lastDownloadDate is ’$downloadDate’")
+
+        val editor = settings2.edit()
+        editor.putString("lastDownloadDate", dateInString)
 
     }
 
@@ -230,6 +234,24 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         override fun onCancelled(p0: DatabaseError?) {
 
         }
+
+        }
+        database.reference.child("users").child(userId).addListenerForSingleValueEvent(dataListener)
+    }
+
+    private fun loadUserCoins(userId: String){
+        val dataListener = object : ValueEventListener{
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if(dataSnapshot.exists()){
+                    val user: User = dataSnapshot.getValue(User::class.java)
+                     userCoins = user.userCoins
+
+                }
+            }
+
+            override fun onCancelled(p0: DatabaseError?) {
+
+            }
 
         }
         database.reference.child("users").child(userId).addListenerForSingleValueEvent(dataListener)
@@ -285,13 +307,10 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
                 val x = LatLng(latitude,longitude)
                 val bitmap = BitmapFactory.decodeResource(applicationContext.resources,R.drawable.coin_marker)
                 val resized_bitmap = Bitmap.createScaledBitmap(bitmap,100,100,false)
-                //val coinicon = Icon("coin", bitmap)
                 val coinicon = IconFactory.recreate("coin", resized_bitmap)
                 map.addMarker(MarkerOptions().position(x).icon(coinicon))
 
             }
-
-            //map.addMarkers(MarkerList)
         }
     }
 
@@ -322,6 +341,13 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
                     applicationContext.openFileOutput("coinzmap.geojson", Context.MODE_PRIVATE).use {
                         it.write(FeatureCollection.fromFeatures(newfcs).toJson().toByteArray())
                     }
+
+                    loadUserCoins(auth.currentUser?.uid.toString())
+                    val geoCoins = JSONObject(userCoins)
+                    val temp:String = geoCoins.get("features").toString()
+                    geoCoins.put("features",temp+fc.properties().toString())
+                    dbRef.child("users").child(auth.currentUser?.uid).child("userCoins").setValue(geoCoins.toString())
+                    //测试的时候删掉别update到firebase
                     //dbRef.child("users").child(auth.currentUser?.uid).child("map").setValue(FeatureCollection.fromFeatures(newfcs).toJson())
 
                     judge = true
