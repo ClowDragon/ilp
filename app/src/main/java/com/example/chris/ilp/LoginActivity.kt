@@ -62,6 +62,8 @@ class LoginActivity : AppCompatActivity() {
                             dbRef.child("users").child(userId).child("status").setValue("signed_in")
                             val intentToMain = Intent(this@LoginActivity, MainActivity::class.java)
                             startActivity(intentToMain)
+
+                            Toast.makeText(this@LoginActivity,"successful logged in!",Toast.LENGTH_LONG).show()
                         }
                     }
         }

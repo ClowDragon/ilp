@@ -88,13 +88,10 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     val runner = DownloadCompleteRunner
     val myTask = DownloadFileTask(runner)
 
-    //private var MarkerList : MutableList<MarkerOptions> = ArrayList()
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_main)
-        Toast.makeText(this@MainActivity,"successful logged in!",Toast.LENGTH_LONG).show()
 
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()

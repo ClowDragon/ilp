@@ -17,6 +17,7 @@ class walletActivity:AppCompatActivity(){
     private lateinit var dbRef: DatabaseReference
     private lateinit var backToGame:Button
     private lateinit var rateOfToday:TextView
+    private var rates = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +42,7 @@ class walletActivity:AppCompatActivity(){
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 if(dataSnapshot.exists()){
                     val user: User = dataSnapshot.getValue(User::class.java)
+                    rates = user.rates
                     var textRates = user.rates
                     rateOfToday.text = "Today's Exchange Rates: \n"+ textRates.split(",")[0].drop(1) +"\n"+textRates.split(",")[1]+ "\n" +textRates.split(",")[2] +"\n" +textRates.split(",")[3].dropLast(1)
                 }
