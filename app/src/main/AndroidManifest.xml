@@ -37,6 +37,9 @@
         <activity android:name=".walletActivity">
 
         </activity>
+        <activity android:name=".TreatActivity">
+
+        </activity>
     </application>
 
 </manifest>

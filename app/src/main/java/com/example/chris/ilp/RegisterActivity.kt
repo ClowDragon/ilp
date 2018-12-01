@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import android.text.TextUtils
+import android.util.Patterns
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
@@ -33,11 +34,11 @@ class RegisterActivity : AppCompatActivity() {
         database = FirebaseDatabase.getInstance()
         dbRef = database.reference
 
-        displayName = findViewById(R.id.displayName) as EditText
-        email = findViewById(R.id.emailRegister) as EditText
-        password = findViewById(R.id.passwordRegister) as EditText
-        registerButton = findViewById(R.id.registerActionButton) as Button
-        signInButton = findViewById(R.id.sign_in_button) as Button
+        displayName = findViewById<EditText>(R.id.displayName)
+        email = findViewById<EditText>(R.id.emailRegister)
+        password = findViewById<EditText>(R.id.passwordRegister)
+        registerButton = findViewById<Button>(R.id.registerActionButton)
+        signInButton = findViewById<Button>(R.id.sign_in_button)
 
         signInButton.setOnClickListener{
             val intent = Intent(this@RegisterActivity, LoginActivity::class.java)
@@ -45,7 +46,7 @@ class RegisterActivity : AppCompatActivity() {
         }
 
 
-        registerButton.setOnClickListener(){
+        registerButton.setOnClickListener {
             if (TextUtils.isEmpty(displayName.text.toString())) {
                 Toast.makeText(applicationContext, "Enter your name!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -62,6 +63,11 @@ class RegisterActivity : AppCompatActivity() {
 
             if (password.length() < 6) {
                 Toast.makeText(applicationContext, "Password too short, enter minimum 6 characters!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (!Patterns.EMAIL_ADDRESS.matcher(email.text).matches()) {
+                Toast.makeText(applicationContext, "Please enter a valid email!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 

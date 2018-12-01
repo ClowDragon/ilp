@@ -87,12 +87,12 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         database = FirebaseDatabase.getInstance()
         dbRef = database.reference
 
-        displayName = findViewById(id.name_text) as TextView
-        status = findViewById(id.status_text) as TextView
-        logout = findViewById(id.signoutButton) as Button
-        store = findViewById(id.storeButton) as Button
-        wallet = findViewById(id.walletButton) as Button
-        collectButton = findViewById(id.collectButton) as Button
+        displayName = findViewById<TextView>(id.name_text)
+        status = findViewById<TextView>(id.status_text)
+        logout = findViewById<Button>(id.signoutButton)
+        store = findViewById<Button>(id.storeButton)
+        wallet = findViewById<Button>(id.walletButton)
+        collectButton = findViewById<Button>(id.collectButton)
         currentLocationButton = findViewById<Button>(id.currentLocationButton)
 
 
@@ -117,9 +117,10 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         }
 
         collectButton.setOnClickListener {
-
+            //import the user coins value from database
             loadNameAndStatus(auth.currentUser?.uid.toString())
             collectCoin()
+            //after collecting the coin we need to update the map to remove the marker.
             map.run {
                 mapView.getMapAsync{
                     clear()
@@ -326,29 +327,18 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
                 val distance = results[0]
                 val radius:Float = 25F
                 if(distance<radius){
-
+                    //create a new Feature Collection to save the collected coins.
                     val coinmap = FeatureCollection.fromJson(userCoins)
                     val usercoins = coinmap.features()
                     usercoins!!.add(fc)
                     dbRef.child("users").child(auth.currentUser?.uid.toString()).child("userCoins").setValue(FeatureCollection.fromFeatures(usercoins).toJson())
 
-
+                    //remove the collected feature from grojson file and update the file using a new FeatureCollection.
                     newfcs!!.remove(fc)
                     applicationContext.openFileOutput("coinzmap.geojson", Context.MODE_PRIVATE).use {
                         it.write(FeatureCollection.fromFeatures(newfcs).toJson().toByteArray())
                     }
-
-
-
-                    //val geoCoins = JSONObject(userCoins)
-                    //val temp:String = geoCoins.get("features").toString()
-                    //geoCoins.put("features",temp+fc.properties().toString())
-                    //dbRef.child("users").child(auth.currentUser?.uid).child("userCoins").setValue(geoCoins.toString())
-
-
-                    //测试的时候删掉别update到firebase
-                    //dbRef.child("users").child(auth.currentUser?.uid).child("map").setValue(FeatureCollection.fromFeatures(newfcs).toJson())
-
+                    //update judge to see if the collection is success.
                     judge = true
                     break
                 }
