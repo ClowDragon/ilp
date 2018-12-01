@@ -35,7 +35,7 @@ class DownloadFileTask(private val caller : DownloadCompleteListener) :
             it.readText()
         }
         val userId = auth.currentUser?.uid
-        dbRef.child("users").child(userId).child("map").setValue(result)
+        dbRef.child("users").child(userId.toString()).child("map").setValue(result)
         return result
     }
 

@@ -4,18 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.location.Location
 import android.location.LocationListener
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.util.Log
-import android.util.TypedValue
-import android.view.LayoutInflater
 import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
@@ -44,13 +39,10 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_wallet.*
 import org.json.JSONObject
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineListener{
 
@@ -85,8 +77,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     val runner = DownloadCompleteRunner
     val myTask = DownloadFileTask(runner)
 
-    private var userCoins :String = "{\"features\":\"\"}"
-
+    private var userCoins :String = "{\n"+"\"type\":\"FeatureCollection\",\n"+"\"features\":[]\n"+"}"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -118,7 +109,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
 
         logout.setOnClickListener {
             val userId = auth.currentUser?.uid
-            dbRef.child("users").child(userId).child("status").setValue("signed_out")
+            dbRef.child("users").child(userId.toString()).child("status").setValue("signed_out")
             auth.signOut()
             val intent = Intent(this@MainActivity, LoginActivity::class.java)
             startActivity(intent)
@@ -126,6 +117,8 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         }
 
         collectButton.setOnClickListener {
+
+            loadNameAndStatus(auth.currentUser?.uid.toString())
             collectCoin()
             map.run {
                 mapView.getMapAsync{
@@ -134,7 +127,6 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
                     addMarkers()
                 }
             }
-
         }
 
         wallet.setOnClickListener {
@@ -173,12 +165,14 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             isLogin()
         }
 
+        loadNameAndStatus(auth.currentUser?.uid.toString())
+
         if (!lastdate.equals(dateInString)) {
             val file = File(applicationContext.filesDir, "coinzmap" + ".geojson")
             val geoString = file.readText()
             val jsonObject = JSONObject(geoString)
             val rateoftoday = jsonObject.getString("rates")
-            dbRef.child("users").child(auth.currentUser?.uid).child("rates").setValue(rateoftoday)
+            dbRef.child("users").child(auth.currentUser?.uid.toString()).child("rates").setValue(rateoftoday)
         }
 
         // use ”” as the default value (this might be the first time the app is run)
@@ -221,9 +215,10 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         val dataListener = object : ValueEventListener{
         override fun onDataChange(dataSnapshot: DataSnapshot) {
         if(dataSnapshot.exists()){
-            val user: User = dataSnapshot.getValue(User::class.java)
+            val user: User = dataSnapshot.getValue(User::class.java)!!
             displayName.text = user.displayName
             status.text = user.status
+
             applicationContext.openFileOutput("coinzmap.geojson", Context.MODE_PRIVATE).use {
                 it.write(user.map.toByteArray())
             }
@@ -231,28 +226,23 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             }
         }
 
-        override fun onCancelled(p0: DatabaseError?) {
-
-        }
+            override fun onCancelled(error: DatabaseError) { }
 
         }
         database.reference.child("users").child(userId).addListenerForSingleValueEvent(dataListener)
     }
 
-    private fun loadUserCoins(userId: String){
+    private fun loadNameAndStatus(userId: String){
         val dataListener = object : ValueEventListener{
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 if(dataSnapshot.exists()){
-                    val user: User = dataSnapshot.getValue(User::class.java)
-                     userCoins = user.userCoins
-
+                    val user: User = dataSnapshot.getValue(User::class.java)!!
+                    displayName.text = user.displayName
+                    status.text = user.status
+                    userCoins = user.userCoins
                 }
             }
-
-            override fun onCancelled(p0: DatabaseError?) {
-
-            }
-
+            override fun onCancelled(error: DatabaseError) { }
         }
         database.reference.child("users").child(userId).addListenerForSingleValueEvent(dataListener)
     }
@@ -324,7 +314,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         val geoString = file.readText()
         val geojsonmap = FeatureCollection.fromJson(geoString)
         val fcs = geojsonmap.features()
-        var newfcs = fcs
+        val newfcs = fcs
         var judge :Boolean= false
         if (fcs != null) {
             for(fc in fcs){
@@ -336,17 +326,26 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
                 val distance = results[0]
                 val radius:Float = 25F
                 if(distance<radius){
-                    //addCoinToWallet(fc)
+
+                    val coinmap = FeatureCollection.fromJson(userCoins)
+                    val usercoins = coinmap.features()
+                    usercoins!!.add(fc)
+                    dbRef.child("users").child(auth.currentUser?.uid.toString()).child("userCoins").setValue(FeatureCollection.fromFeatures(usercoins).toJson())
+
+
                     newfcs!!.remove(fc)
                     applicationContext.openFileOutput("coinzmap.geojson", Context.MODE_PRIVATE).use {
                         it.write(FeatureCollection.fromFeatures(newfcs).toJson().toByteArray())
                     }
 
-                    loadUserCoins(auth.currentUser?.uid.toString())
-                    val geoCoins = JSONObject(userCoins)
-                    val temp:String = geoCoins.get("features").toString()
-                    geoCoins.put("features",temp+fc.properties().toString())
-                    dbRef.child("users").child(auth.currentUser?.uid).child("userCoins").setValue(geoCoins.toString())
+
+
+                    //val geoCoins = JSONObject(userCoins)
+                    //val temp:String = geoCoins.get("features").toString()
+                    //geoCoins.put("features",temp+fc.properties().toString())
+                    //dbRef.child("users").child(auth.currentUser?.uid).child("userCoins").setValue(geoCoins.toString())
+
+
                     //测试的时候删掉别update到firebase
                     //dbRef.child("users").child(auth.currentUser?.uid).child("map").setValue(FeatureCollection.fromFeatures(newfcs).toJson())
 
@@ -364,16 +363,6 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         }else{
             Toast.makeText(this@MainActivity,"You get a coin!",Toast.LENGTH_LONG).show()
         }
-    }
-
-    private fun addCoinToWallet(fc:Feature){
-        val textView = TextView(this)
-        textView.height = 30
-        textView.width = LayoutParams.MATCH_PARENT
-        textView.text = "Coin Type:"+ fc.properties()?.get("currency") +"   value:" + fc.properties()?.get("value")
-        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,30F)
-        textView.setTextColor(Color.BLACK)
-        walletLayout.addView(textView)
     }
 
 

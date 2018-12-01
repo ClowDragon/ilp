@@ -30,7 +30,7 @@ class startActivity : AppCompatActivity() {
         val dataListener = object : ValueEventListener{
             override fun onDataChange(dataSnapshot: DataSnapshot){
                 if(dataSnapshot.exists()){
-                    val user: User = dataSnapshot.getValue(User::class.java)
+                    val user: User = dataSnapshot.getValue(User::class.java)!!
                     if(user.status.equals("signed_in")){
                         val intentToMain = Intent(this@startActivity,MainActivity::class.java)
                         startActivity(intentToMain)
@@ -49,9 +49,7 @@ class startActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onCancelled(p0: DatabaseError?) {
-
-            }
+            override fun onCancelled(error: DatabaseError) { }
 
         }
         database.reference.child("users").child(userId).addListenerForSingleValueEvent(dataListener)

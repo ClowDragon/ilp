@@ -59,7 +59,7 @@ class LoginActivity : AppCompatActivity() {
                         }
                         else{
                             val userId = auth.currentUser?.uid
-                            dbRef.child("users").child(userId).child("status").setValue("signed_in")
+                            dbRef.child("users").child(userId.toString()).child("status").setValue("signed_in")
                             val intentToMain = Intent(this@LoginActivity, MainActivity::class.java)
                             startActivity(intentToMain)
 

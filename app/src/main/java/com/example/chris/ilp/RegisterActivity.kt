@@ -71,8 +71,8 @@ class RegisterActivity : AppCompatActivity() {
                         if (task.isSuccessful) {
                             Toast.makeText(applicationContext, "Account Created!", Toast.LENGTH_SHORT).show()
                             val userId = auth.currentUser?.uid
-                            val user = User(displayName.text.toString(),"signed_out","")
-                            dbRef.child("users").child(userId).setValue(user)
+                            val user = User(displayName.text.toString(),"signed_out","","","{\n"+"\"type\":\"FeatureCollection\",\n"+"\"features\":[]\n"+"}")
+                            dbRef.child("users").child(userId.toString()).setValue(user)
                             val intentToLoginActivity = Intent(this@RegisterActivity, LoginActivity::class.java)
                             startActivity(intentToLoginActivity)
                         }
