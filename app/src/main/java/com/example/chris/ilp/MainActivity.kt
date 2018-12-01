@@ -248,12 +248,12 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         database.reference.child("users").child(userId).addListenerForSingleValueEvent(dataListener)
     }
 
-    fun Date.toString(format: String, locale: Locale = Locale.getDefault()): String {
+    private fun Date.toString(format: String, locale: Locale = Locale.getDefault()): String {
         val formatter = SimpleDateFormat(format, locale)
         return formatter.format(this)
     }
 
-    fun getCurrentDateTime(): Date {
+    private fun getCurrentDateTime(): Date {
         return Calendar.getInstance().time
     }
 
@@ -316,7 +316,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         val geojsonmap = FeatureCollection.fromJson(geoString)
         val fcs = geojsonmap.features()
         val newfcs = fcs
-        var judge :Boolean= false
+        var judge = false
         if (fcs != null) {
             for(fc in fcs){
                 val geometry:Point = fc.geometry() as Point
@@ -325,7 +325,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
                 val results = FloatArray(1)
                 Location.distanceBetween(latitudeOfcurrentPoint!!.toDouble(), longitudeOfcurrentPoint!!.toDouble(), latitudeOfMark, longitudeOfMark, results)
                 val distance = results[0]
-                val radius:Float = 25F
+                val radius = 25F
                 if(distance<radius){
                     //create a new Feature Collection to save the collected coins.
                     val coinmap = FeatureCollection.fromJson(userCoins)

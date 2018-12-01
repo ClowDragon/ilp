@@ -6,10 +6,14 @@ import android.support.v7.app.AppCompatActivity
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import kotlinx.android.synthetic.main.activity_login.*
+import org.json.JSONArray
+import org.json.JSONObject
 
 class TreatActivity:AppCompatActivity(){
 
@@ -22,8 +26,11 @@ class TreatActivity:AppCompatActivity(){
     private lateinit var savetobank : Button
     private lateinit var sendtoothers : Button
     private lateinit var returntowallet : Button
-    private var userCoins :String = ""
+    private var userCoins :String = "for saving user coins"
+    private var ratio : Double = 1.0
     private var index : Int = 0
+    private var rates : String = ""
+    private var usergold : Double = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +49,7 @@ class TreatActivity:AppCompatActivity(){
         val extras = intent.extras
         if (extras != null) {
             index = extras.getInt("key")
-            //The key argument here must match that used in the other activity
+            //The key argument here must match that used in the wallet activity
         }
 
         loadCoin(auth.currentUser?.uid.toString())
@@ -52,6 +59,12 @@ class TreatActivity:AppCompatActivity(){
             startActivity(intenttowallet)
         }
 
+        savetobank.setOnClickListener {
+            saveToBank()
+            Toast.makeText(this@TreatActivity,"Saved to Bank!",Toast.LENGTH_LONG).show()
+            val intenttowallet = Intent(this@TreatActivity,walletActivity::class.java)
+            startActivity(intenttowallet)
+        }
     }
 
 
@@ -61,6 +74,8 @@ class TreatActivity:AppCompatActivity(){
                 if(dataSnapshot.exists()){
                     val user: User = dataSnapshot.getValue(User::class.java)!!
                     userCoins = user.userCoins
+                    rates = user.rates
+                    usergold = user.gold
                     val geoCoins = FeatureCollection.fromJson(user.userCoins)
                     val coins = geoCoins.features()
                     val targetfeature = coins!!.get(index)
@@ -72,6 +87,23 @@ class TreatActivity:AppCompatActivity(){
             override fun onCancelled(error: DatabaseError) { }
         }
         database.reference.child("users").child(userId).addListenerForSingleValueEvent(dataListener)
+    }
+
+    private fun saveToBank(){
+        val geoCoins = FeatureCollection.fromJson(this.userCoins)
+        val coins = geoCoins.features()
+        val targetcoin = coins!!.get(index)
+        val value = targetcoin.properties()!!.get("value").asDouble
+        val type = targetcoin.properties()!!.get("currency").asString
+
+        val ratesJson = JSONObject(rates)
+        val thisrate = ratesJson.get(type).toString().toDouble()
+        val gold = value * thisrate * ratio + usergold
+        dbRef.child("users").child(auth.currentUser?.uid.toString()).child("gold").setValue(gold)
+
+        coins.removeAt(index)
+        val newuserCoins = FeatureCollection.fromFeatures(coins)
+        dbRef.child("users").child(auth.currentUser?.uid.toString()).child("userCoins").setValue(newuserCoins.toJson())
     }
 
 }

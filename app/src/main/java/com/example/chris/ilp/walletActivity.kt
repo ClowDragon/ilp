@@ -14,6 +14,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
+import org.json.JSONObject
 
 class walletActivity:AppCompatActivity(){
     private lateinit var auth: FirebaseAuth
@@ -45,8 +46,10 @@ class walletActivity:AppCompatActivity(){
 
         listView.onItemClickListener = AdapterView.OnItemClickListener { p0, p1, p2, p3 ->
             val value = p2
+            //val rate = rates
             val i = Intent(this@walletActivity, TreatActivity::class.java)
             i.putExtra("key", value)
+            //i.putExtra("rate",rate)
             startActivity(i)
         }
 
@@ -82,7 +85,7 @@ class walletActivity:AppCompatActivity(){
                         }
                     }
 
-                    var arrayAdapter = ArrayAdapter(this@walletActivity,android.R.layout.simple_list_item_1,listofcoins)
+                    val arrayAdapter = ArrayAdapter(this@walletActivity,android.R.layout.simple_list_item_1,listofcoins)
                     listView.adapter = arrayAdapter
 
 
