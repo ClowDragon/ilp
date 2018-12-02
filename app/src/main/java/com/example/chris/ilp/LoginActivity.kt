@@ -27,14 +27,18 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-        email = findViewById(id.email) as EditText
-        password = findViewById(id.password) as EditText
-        loginButton = findViewById(id.loginButton) as Button
-        registerButton = findViewById(id.registerButton) as Button
+
+        //set up layout
+        email = findViewById<EditText>(id.email)
+        password = findViewById<EditText>(id.password)
+        loginButton = findViewById<Button>(id.loginButton)
+        registerButton = findViewById<Button>(id.registerButton)
         registerButton.setOnClickListener{
             val intent = Intent(this@LoginActivity, RegisterActivity::class.java)
             startActivity(intent)
         }
+
+        //create login button listener and check if the email and password is correct.
         loginButton.setOnClickListener{
             if (TextUtils.isEmpty(email.text.toString())) {
                 Toast.makeText(applicationContext, "Enter email address!", Toast.LENGTH_SHORT).show()
@@ -58,12 +62,13 @@ class LoginActivity : AppCompatActivity() {
                         if (!task.isSuccessful) run {
                             // there was an error
                             if (password.length() < 6) {
-                                password.setError(getString(R.string.minimum_password))
+                                password.error = getString(R.string.minimum_password)
                             } else {
                                 Toast.makeText(this@LoginActivity, getString(R.string.auth_failed), Toast.LENGTH_LONG).show()
                             }
                         }
                         else{
+                            //update login status and intent to main activity.
                             val userId = auth.currentUser?.uid
                             dbRef.child("users").child(userId.toString()).child("status").setValue("signed_in")
                             val intentToMain = Intent(this@LoginActivity, MainActivity::class.java)

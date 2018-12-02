@@ -1,32 +1,28 @@
 package com.example.chris.ilp
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.support.v7.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
 class startActivity : AppCompatActivity() {
-    private lateinit var auth: FirebaseAuth
-    private lateinit var database: FirebaseDatabase
-    private lateinit var dbRef: DatabaseReference
 
+    private lateinit var auth:FirebaseAuth
+    private lateinit var database:FirebaseDatabase
+
+    //Start activity to check the status of current user thus intent to main or login activity.
     override fun onCreate(savedInstanceState: Bundle?) {
-        var auth = FirebaseAuth.getInstance()
-        var database = FirebaseDatabase.getInstance()
-        var dbRef = database.reference
+        auth = FirebaseAuth.getInstance()
         val userId = auth.currentUser?.uid
         isLogin(userId.toString())
         super.onCreate(savedInstanceState)
             
         }
 
-    fun isLogin(userId: String){
-        var auth = FirebaseAuth.getInstance()
-        var database = FirebaseDatabase.getInstance()
-        var dbRef = database.reference
+    //helper function to check if the user status is logged in or logged out.
+    private fun isLogin(userId: String){
+        database = FirebaseDatabase.getInstance()
         val dataListener = object : ValueEventListener{
             override fun onDataChange(dataSnapshot: DataSnapshot){
                 if(dataSnapshot.exists()){
