@@ -36,7 +36,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="216dp"
         android:layout_marginEnd="8dp"
-        android:hint="Enter the 28 digits uid here!"
+        android:hint="Enter the 28 digits UID here!"
         android:inputType="textEmailAddress"
         android:textColor="@android:color/black"
         android:textColorHint="@android:color/white"
@@ -71,6 +71,16 @@
         android:textColor="@android:color/background_dark"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="183dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="152dp"
+        android:layout_marginEnd="8dp"
+        android:text="Hint: Your UID is shown on the left-top corner of map!"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

@@ -48,6 +48,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
 
     private lateinit var displayName: TextView
     private lateinit var status:TextView
+    private lateinit var uidtext:TextView
     private lateinit var logout: Button
     private lateinit var store: Button
     private lateinit var wallet:Button
@@ -88,6 +89,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         dbRef = database.reference
 
         displayName = findViewById<TextView>(id.name_text)
+        uidtext = findViewById<TextView>(id.uidtext)
         status = findViewById<TextView>(id.status_text)
         logout = findViewById<Button>(id.signoutButton)
         store = findViewById<Button>(id.storeButton)
@@ -115,6 +117,9 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             startActivity(intent)
             finish()
         }
+
+        val testString = "Your UID is : " + auth.currentUser?.uid
+        uidtext.text = testString
 
         collectButton.setOnClickListener {
             //import the user coins value from database
@@ -211,7 +216,6 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             val user: User = dataSnapshot.getValue(User::class.java)!!
             displayName.text = user.displayName
             status.text = user.status
-
             applicationContext.openFileOutput("coinzmap.geojson", Context.MODE_PRIVATE).use {
                 it.write(user.map.toByteArray())
             }

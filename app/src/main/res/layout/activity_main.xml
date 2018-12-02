@@ -23,11 +23,20 @@
         mapbox:mapbox_cameraTargetLat="55.944"
         mapbox:mapbox_cameraTargetLng="-3.188396"
         mapbox:mapbox_cameraZoom="15"
-        mapbox:mapbox_styleUrl="mapbox://styles/mapbox/streets-v10" />
+        mapbox:mapbox_styleUrl="mapbox://styles/mapbox/streets-v10" >
 
+    </com.mapbox.mapboxsdk.maps.MapView>
 
-
-
+    <TextView
+        android:id="@+id/uidtext"
+        android:layout_width="131dp"
+        android:layout_height="59dp"
+        android:layout_marginTop="44dp"
+        android:text="your uid"
+        mapbox:layout_constraintEnd_toEndOf="parent"
+        mapbox:layout_constraintHorizontal_bias="0.0"
+        mapbox:layout_constraintStart_toStartOf="parent"
+        mapbox:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/status_text"
