@@ -30,13 +30,13 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <EditText
-        android:id="@+id/emailfortreat"
+        android:id="@+id/uidfortreat"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="216dp"
         android:layout_marginEnd="8dp"
-        android:hint="Enter the email address here!"
+        android:hint="Enter the 28 digits uid here!"
         android:inputType="textEmailAddress"
         android:textColor="@android:color/black"
         android:textColorHint="@android:color/white"

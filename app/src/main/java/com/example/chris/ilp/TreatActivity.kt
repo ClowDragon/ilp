@@ -3,16 +3,20 @@ package com.example.chris.ilp
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.text.Editable
+import android.text.TextWatcher
+import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.SignInMethodQueryResult
 import com.google.firebase.database.*
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
-import kotlinx.android.synthetic.main.activity_login.*
-import org.json.JSONArray
 import org.json.JSONObject
 
 class TreatActivity:AppCompatActivity(){
@@ -22,7 +26,7 @@ class TreatActivity:AppCompatActivity(){
     private lateinit var dbRef: DatabaseReference
 
     private lateinit var treatingcoin : TextView
-    private lateinit var emailfortreat : EditText
+    private lateinit var uidfortreat : EditText
     private lateinit var savetobank : Button
     private lateinit var sendtoothers : Button
     private lateinit var returntowallet : Button
@@ -31,6 +35,7 @@ class TreatActivity:AppCompatActivity(){
     private var index : Int = 0
     private var rates : String = ""
     private var usergold : Double = 0.0
+    private var result = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +46,7 @@ class TreatActivity:AppCompatActivity(){
         dbRef = database.reference
 
         treatingcoin = findViewById<TextView>(R.id.treatingcoin)
-        emailfortreat = findViewById<EditText>(R.id.emailfortreat)
+        uidfortreat = findViewById<EditText>(R.id.uidfortreat)
         savetobank = findViewById<Button>(R.id.savetobank)
         sendtoothers = findViewById<Button>(R.id.sendtoother)
         returntowallet = findViewById<Button>(R.id.returntowallet)
@@ -57,6 +62,33 @@ class TreatActivity:AppCompatActivity(){
         returntowallet.setOnClickListener {
             val intenttowallet = Intent(this@TreatActivity,walletActivity::class.java)
             startActivity(intenttowallet)
+        }
+
+        //add text listener to check if the content of edit text is a valid uid.
+        uidfortreat.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+
+            }
+            override fun afterTextChanged(p0: Editable) {
+                checkuidexist(p0.toString())
+            }
+        })
+
+
+        sendtoothers.setOnClickListener {
+            if (uidfortreat.text.length!=28) {
+                Toast.makeText(this@TreatActivity, "Please enter a valid uid!", Toast.LENGTH_SHORT).show()
+            }
+            else if (!this.result) {
+                Toast.makeText(this@TreatActivity, "uid not exist!", Toast.LENGTH_SHORT).show()
+            }
+            else {
+                Toast.makeText(this@TreatActivity, "uid exist!", Toast.LENGTH_SHORT).show()
+            }
         }
 
         savetobank.setOnClickListener {
@@ -106,4 +138,14 @@ class TreatActivity:AppCompatActivity(){
         dbRef.child("users").child(auth.currentUser?.uid.toString()).child("userCoins").setValue(newuserCoins.toJson())
     }
 
+
+    private fun checkuidexist(userId: String){
+        val dataListener2 = object : ValueEventListener{
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                result = dataSnapshot.child("displayName").exists()
+            }
+            override fun onCancelled(error: DatabaseError) { }
+        }
+        dbRef.child("users").child(userId).addListenerForSingleValueEvent(dataListener2)
+    }
 }

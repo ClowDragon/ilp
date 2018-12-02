@@ -4,6 +4,7 @@ import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -42,6 +43,11 @@ class LoginActivity : AppCompatActivity() {
 
             if (TextUtils.isEmpty(password.text.toString())) {
                 Toast.makeText(applicationContext, "Enter password!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (!Patterns.EMAIL_ADDRESS.matcher(email.text).matches()) {
+                Toast.makeText(applicationContext, "Please enter a valid email!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             auth = FirebaseAuth.getInstance()

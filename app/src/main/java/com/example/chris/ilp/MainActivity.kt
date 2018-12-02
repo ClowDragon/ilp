@@ -168,14 +168,6 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
 
         loadNameAndStatus(auth.currentUser?.uid.toString())
 
-        if (!lastdate.equals(dateInString)) {
-            val file = File(applicationContext.filesDir, "coinzmap" + ".geojson")
-            val geoString = file.readText()
-            val jsonObject = JSONObject(geoString)
-            val rateoftoday = jsonObject.getString("rates")
-            dbRef.child("users").child(auth.currentUser?.uid.toString()).child("rates").setValue(rateoftoday)
-        }
-
         // use ”” as the default value (this might be the first time the app is run)
         downloadDate = settings2.getString("lastDownloadDate", "")
         // Write a message to ”logcat” (for debugging purposes)
@@ -223,7 +215,9 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             applicationContext.openFileOutput("coinzmap.geojson", Context.MODE_PRIVATE).use {
                 it.write(user.map.toByteArray())
             }
-
+            val jsonObject = JSONObject(user.map)
+            val rateoftoday = jsonObject.getString("rates")
+            dbRef.child("users").child(auth.currentUser?.uid.toString()).child("rates").setValue(rateoftoday)
             }
         }
 
