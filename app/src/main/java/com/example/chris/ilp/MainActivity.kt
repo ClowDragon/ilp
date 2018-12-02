@@ -5,10 +5,8 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
-import android.location.LocationListener
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
@@ -16,7 +14,6 @@ import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.example.chris.ilp.R.*
 import com.google.firebase.database.*
-import com.google.gson.JsonObject
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineListener
 import com.mapbox.android.core.location.LocationEnginePriority
@@ -27,15 +24,12 @@ import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
-import com.mapbox.mapboxsdk.annotations.Icon
 import com.mapbox.mapboxsdk.annotations.IconFactory
-import com.mapbox.mapboxsdk.annotations.Marker
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
@@ -84,10 +78,12 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_main)
 
+        //set up fire base database.
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
         dbRef = database.reference
 
+        //set up views of layout.
         displayName = findViewById<TextView>(id.name_text)
         uidtext = findViewById<TextView>(id.uidtext)
         status = findViewById<TextView>(id.status_text)
@@ -97,18 +93,21 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         collectButton = findViewById<Button>(id.collectButton)
         currentLocationButton = findViewById<Button>(id.currentLocationButton)
 
-
+        //get the last date of updating map from the preferences file.
         val settings = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
         val lastdate = settings.getString("lastDownloadDate","")
 
+        //check if the last data match the current date, if not update map to database using execute(URL)
         if (!lastdate.equals(dateInString)) {
             myTask.execute(mapURL)
+            //create empty local geojson file.
             val file = File(applicationContext.filesDir, "coinzmap" + ".geojson")
             if(!file.exists()){
                 file.createNewFile()
             }
         }
 
+        //listener to sign out from current user.
         logout.setOnClickListener {
             val userId = auth.currentUser?.uid
             dbRef.child("users").child(userId.toString()).child("status").setValue("signed_out")
@@ -118,9 +117,11 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             finish()
         }
 
+        //get the current user UID and update to screen.
         val testString = "Your UID is : " + auth.currentUser?.uid
         uidtext.text = testString
 
+        //Button for collect the coin
         collectButton.setOnClickListener {
             //import the user coins value from database
             loadNameAndStatus(auth.currentUser?.uid.toString())
@@ -135,15 +136,18 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             }
         }
 
+        //intent to wallet activity.
         wallet.setOnClickListener {
             val intentToWallet = Intent(this@MainActivity,walletActivity::class.java)
             startActivity(intentToWallet)
         }
 
+        //set camera location to current location
         currentLocationButton.setOnClickListener {
             setCameraPosition(originLocation)
         }
 
+        //set up the build in mapbox and add markers to the map.
         Mapbox.getInstance(applicationContext,getString(R.string.access_token))
         mapView = findViewById(R.id.mapView)
         mapView.onCreate(savedInstanceState)
@@ -165,8 +169,10 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             locationEngine?.requestLocationUpdates()
             locationLayerPlugin?.onStart()
         }
+        //start the map function.
         mapView.onStart()
-        // Restore preferences
+
+        // call is Login function below if we need an update.
         if (!lastdate.equals(dateInString)) {
             isLogin()
         }
@@ -183,6 +189,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
 
     }
 
+    //override onStop function to stop the mapView functions.
     override fun onStop() {
         super.onStop()
         locationEngine?.removeLocationUpdates()
@@ -201,7 +208,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     }
 
 
-
+    //function is login to load data from database to local file.
     private fun isLogin(){
         val intent = Intent(this@MainActivity, LoginActivity::class.java)
 
@@ -209,28 +216,34 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
 
     }
 
+
+    //load the data from fire base database using value event listener.
     private fun loadData(userId: String){
         val dataListener = object : ValueEventListener{
         override fun onDataChange(dataSnapshot: DataSnapshot) {
         if(dataSnapshot.exists()){
+            //update user data.
             val user: User = dataSnapshot.getValue(User::class.java)!!
             displayName.text = user.displayName
             status.text = user.status
+            //write the map saved in database to local file.
             applicationContext.openFileOutput("coinzmap.geojson", Context.MODE_PRIVATE).use {
                 it.write(user.map.toByteArray())
             }
+            //create a json object in order to get the rates of today and save to database.
+            //I'll delete the rates in future operations so i saved rates to database.
             val jsonObject = JSONObject(user.map)
             val rateoftoday = jsonObject.getString("rates")
             dbRef.child("users").child(auth.currentUser?.uid.toString()).child("rates").setValue(rateoftoday)
             }
         }
-
             override fun onCancelled(error: DatabaseError) { }
 
         }
         database.reference.child("users").child(userId).addListenerForSingleValueEvent(dataListener)
     }
 
+    //save helper function as above to update name status and userCoins of current user.
     private fun loadNameAndStatus(userId: String){
         val dataListener = object : ValueEventListener{
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -246,15 +259,17 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         database.reference.child("users").child(userId).addListenerForSingleValueEvent(dataListener)
     }
 
+    //helper function for change the date to the format i need.
     private fun Date.toString(format: String, locale: Locale = Locale.getDefault()): String {
         val formatter = SimpleDateFormat(format, locale)
         return formatter.format(this)
     }
-
+    //helper function to get current time.
     private fun getCurrentDateTime(): Date {
         return Calendar.getInstance().time
     }
 
+    //override functions for updating mapView status.
     override fun onResume() {
         super.onResume()
         mapView.onResume()
@@ -283,17 +298,21 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         mapView.onLowMemory()
     }
 
+    //important helper function to add markers to the map loaded from local file.
     private fun addMarkers(){
+        //load coins data from local geojson file.
         val file = File(applicationContext.filesDir, "coinzmap" + ".geojson")
         val geoString = file.readText()
         val geojsonmap = FeatureCollection.fromJson(geoString)
         val fcs = geojsonmap.features()
+        /* add marker for each features in feature collection. */
         if (fcs != null) {
             for(fc:Feature in fcs){
                 val geometry:Point = fc.geometry() as Point
                 val latitude = geometry.latitude()
                 val longitude = geometry.longitude()
                 val x = LatLng(latitude,longitude)
+                //here i load my specific image of marker as a coin.
                 val bitmap = BitmapFactory.decodeResource(applicationContext.resources,R.drawable.coin_marker)
                 val resized_bitmap = Bitmap.createScaledBitmap(bitmap,100,100,false)
                 val coinicon = IconFactory.recreate("coin", resized_bitmap)
@@ -303,17 +322,18 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         }
     }
 
-
+    //important helper function collect coin
     private fun collectCoin(){
         val currentLocation = locationEngine?.lastLocation
         val latitudeOfcurrentPoint = currentLocation?.latitude
         val longitudeOfcurrentPoint = currentLocation?.longitude
-
+        //read file from local json file.
         val file = File(applicationContext.filesDir, "coinzmap" + ".geojson")
         val geoString = file.readText()
         val geojsonmap = FeatureCollection.fromJson(geoString)
         val fcs = geojsonmap.features()
         val newfcs = fcs
+        //judge for deciding if the collection is success.
         var judge = false
         if (fcs != null) {
             for(fc in fcs){
@@ -354,7 +374,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     }
 
 
-
+    //the several basic functions initialise the mapbox.
     private fun enableLocation(){
         if(PermissionsManager.areLocationPermissionsGranted(this)){
             initializeLocationEngine()
@@ -365,6 +385,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         }
     }
 
+    //initialise mapbox engines.
     private fun initializeLocationEngine(){
         locationEngine = LocationEngineProvider(this).obtainBestLocationEngineAvailable()
         locationEngine?.priority = LocationEnginePriority.HIGH_ACCURACY

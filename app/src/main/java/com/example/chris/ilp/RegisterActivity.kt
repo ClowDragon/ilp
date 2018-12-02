@@ -8,13 +8,11 @@ import android.widget.EditText
 import android.widget.Toast
 import android.text.TextUtils
 import android.util.Patterns
-import com.google.android.gms.common.SignInButton
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import kotlinx.android.synthetic.main.activity_register.*
 
 class RegisterActivity : AppCompatActivity() {
     private lateinit var displayName: EditText
@@ -26,26 +24,30 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var dbRef: DatabaseReference
     private lateinit var signInButton: Button
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
+        //set up fire base database.
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
         dbRef = database.reference
 
+        //set up views from layout.
         displayName = findViewById<EditText>(R.id.displayName)
         email = findViewById<EditText>(R.id.emailRegister)
         password = findViewById<EditText>(R.id.passwordRegister)
         registerButton = findViewById<Button>(R.id.registerActionButton)
         signInButton = findViewById<Button>(R.id.sign_in_button)
 
+        //sign in listener for intent back to login activity.
         signInButton.setOnClickListener{
             val intent = Intent(this@RegisterActivity, LoginActivity::class.java)
             startActivity(intent)
         }
 
-
+        //register using the email and password from edit text and check conditions.
         registerButton.setOnClickListener {
             if (TextUtils.isEmpty(displayName.text.toString())) {
                 Toast.makeText(applicationContext, "Enter your name!", Toast.LENGTH_SHORT).show()
@@ -65,12 +67,12 @@ class RegisterActivity : AppCompatActivity() {
                 Toast.makeText(applicationContext, "Password too short, enter minimum 6 characters!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
+            //check the email format.
             if (!Patterns.EMAIL_ADDRESS.matcher(email.text).matches()) {
                 Toast.makeText(applicationContext, "Please enter a valid email!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
+            //create the account and save it to database.
             else{
                 auth.createUserWithEmailAndPassword(email.text.toString(), password.text.toString()).
                     addOnCompleteListener { task: Task<AuthResult> ->

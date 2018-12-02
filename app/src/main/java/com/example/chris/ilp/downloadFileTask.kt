@@ -30,7 +30,7 @@ class DownloadFileTask(private val caller : DownloadCompleteListener) :
         database = FirebaseDatabase.getInstance()
         dbRef = database.reference
         val stream : InputStream = downloadUrl(urlString)
-/* Read input from stream, build result as a string */
+        /* read the input stream and save it to database. */
         val result = stream.bufferedReader().use {
             it.readText()
         }
@@ -43,7 +43,7 @@ class DownloadFileTask(private val caller : DownloadCompleteListener) :
     private fun downloadUrl(urlString: String): InputStream {
         val url = URL(urlString)
         val conn = url.openConnection() as HttpURLConnection
-// Also available: HttpsURLConnection
+        // Also available: HttpsURLConnection
         conn.readTimeout = 10000 // milliseconds
         conn.connectTimeout = 15000 // milliseconds
         conn.requestMethod = "GET"
