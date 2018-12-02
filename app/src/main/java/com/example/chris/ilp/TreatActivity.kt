@@ -31,6 +31,7 @@ class TreatActivity:AppCompatActivity(){
     private lateinit var sendtoothers : Button
     private lateinit var returntowallet : Button
     private var userCoins :String = "for saving user coins"
+    private var sendusercoin:String = "for receiving coin"
     private var ratio : Double = 1.0
     private var index : Int = 0
     private var rates : String = ""
@@ -87,8 +88,22 @@ class TreatActivity:AppCompatActivity(){
                 Toast.makeText(this@TreatActivity, "uid not exist!", Toast.LENGTH_SHORT).show()
             }
             else {
-                Toast.makeText(this@TreatActivity, "uid exist!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@TreatActivity, "Success!", Toast.LENGTH_SHORT).show()
+                val geoCoins = FeatureCollection.fromJson(this.userCoins)
+                val coins = geoCoins.features()
+                val targetcoin = coins!!.get(index)
+                coins.removeAt(index)
+                val newuserCoins = FeatureCollection.fromFeatures(coins)
+                dbRef.child("users").child(auth.currentUser?.uid.toString()).child("userCoins").setValue(newuserCoins.toJson())
+
+                val sendgeoCoins = FeatureCollection.fromJson(this.sendusercoin)
+                val sendcoins = sendgeoCoins.features()
+                sendcoins!!.add(targetcoin)
+                val newsenduserCoins = FeatureCollection.fromFeatures(sendcoins)
+                dbRef.child("users").child(uidfortreat.text.toString()).child("userCoins").setValue(newsenduserCoins.toJson())
             }
+            val intenttowallet = Intent(this@TreatActivity,walletActivity::class.java)
+            startActivity(intenttowallet)
         }
 
         savetobank.setOnClickListener {
@@ -142,7 +157,14 @@ class TreatActivity:AppCompatActivity(){
     private fun checkuidexist(userId: String){
         val dataListener2 = object : ValueEventListener{
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                result = dataSnapshot.child("displayName").exists()
+                if(dataSnapshot.child("displayName").exists()){
+                    val user: User = dataSnapshot.getValue(User::class.java)!!
+                    result = true
+                    sendusercoin = user.userCoins
+                }
+                else{
+                    result = false
+                }
             }
             override fun onCancelled(error: DatabaseError) { }
         }
