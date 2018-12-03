@@ -136,6 +136,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             }
         }
 
+        //intent to store activity.
         store.setOnClickListener {
             val intentToStore = Intent(this@MainActivity,StoreActivity::class.java)
             startActivity(intentToStore)
