@@ -18,10 +18,13 @@ class StoreActivity: AppCompatActivity(){
     private lateinit var dbRef: DatabaseReference
     private lateinit var usergold : TextView
     private lateinit var userCurrentRatio:TextView
+    private lateinit var vipLevelText :TextView
     private lateinit var goldboosterbutton :Button
+    private lateinit var upgradeVIPlevel :Button
     private lateinit var backtogameimageButton: ImageButton
     private var userRatio = 1.0
     private var userGold = 0.0
+    private var vipLevel = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,16 +36,43 @@ class StoreActivity: AppCompatActivity(){
 
         usergold = findViewById<TextView>(R.id.usergold)
         userCurrentRatio = findViewById<TextView>(R.id.userCurrentRatio)
+        vipLevelText = findViewById<TextView>(R.id.vipleveletext)
         goldboosterbutton = findViewById<Button>(R.id.goldboosterbutton)
+        upgradeVIPlevel = findViewById<Button>(R.id.viplevelupbutton)
         backtogameimageButton = findViewById<ImageButton>(R.id.backtogameimageButton)
 
+        //load user data from database to screen using helper function loadUserRatio
         loadUserRatio(auth.currentUser?.uid.toString())
 
+        //Back to game button
         backtogameimageButton.setOnClickListener {
             val intent = Intent(this,MainActivity::class.java)
             startActivity(intent)
         }
 
+        //button for upgrade vip level
+        upgradeVIPlevel.setOnClickListener {
+            //maximum vip level is 4
+            if(vipLevel<4){
+                //need vip level +1 times 1000 gold to upgrade.
+                val judge  = (vipLevel+1)*1000
+                if (userGold>judge){
+                    Toast.makeText(this@StoreActivity,"Upgraded your VIP level!",Toast.LENGTH_LONG).show()
+                    dbRef.child("users").child(auth.currentUser?.uid.toString()).child("gold").setValue(userGold-judge)
+                    dbRef.child("users").child(auth.currentUser?.uid.toString()).child("ratio").setValue(userRatio+0.5)
+                    dbRef.child("users").child(auth.currentUser?.uid.toString()).child("VIPlevel").setValue(vipLevel+1)
+                }
+                else{
+                    Toast.makeText(this@StoreActivity,"Not enough gold need $judge!",Toast.LENGTH_LONG).show()
+                    return@setOnClickListener
+                }
+            }else{
+                Toast.makeText(this@StoreActivity,"You have reached the highest VIP level!",Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+        }
+
+        //get a booster from this button and update ratio and gold
         goldboosterbutton.setOnClickListener {
             if(userGold<1000){
                 Toast.makeText(this@StoreActivity,"Not enough gold!",Toast.LENGTH_LONG).show()
@@ -65,8 +95,14 @@ class StoreActivity: AppCompatActivity(){
                     val user: User = dataSnapshot.getValue(User::class.java)!!
                     userRatio = user.ratio
                     userGold = user.gold
+                    vipLevel = user.VIPlevel
+
+                    val levelText = "VIP "+user.VIPlevel
+                    vipLevelText.text = levelText
+
                     val textofgold = "Your gold: "+user.gold.toString()
                     usergold.text = textofgold
+
                     val textofratio = "Your exchange ratio is : " + user.ratio.toString()
                     userCurrentRatio.text = textofratio
                 }

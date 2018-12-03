@@ -79,4 +79,8 @@ class LoginActivity : AppCompatActivity() {
                     }
         }
     }
+
+    override fun onBackPressed() {
+        Toast.makeText(this@LoginActivity,"Can not return to last activity!!",Toast.LENGTH_LONG).show()
+    }
 }

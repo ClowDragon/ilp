@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
@@ -43,6 +44,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     private lateinit var displayName: TextView
     private lateinit var status:TextView
     private lateinit var uidtext:TextView
+    private lateinit var vipicon:ImageView
     private lateinit var logout: Button
     private lateinit var store: Button
     private lateinit var wallet:Button
@@ -87,6 +89,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         displayName = findViewById<TextView>(id.name_text)
         uidtext = findViewById<TextView>(id.uidtext)
         status = findViewById<TextView>(id.status_text)
+        vipicon = findViewById<ImageView>(id.imageView)
         logout = findViewById<Button>(id.signoutButton)
         store = findViewById<Button>(id.storeButton)
         wallet = findViewById<Button>(id.walletButton)
@@ -120,6 +123,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         //get the current user UID and update to screen.
         val testString = "Your UID is : " + auth.currentUser?.uid
         uidtext.text = testString
+
 
         //Button for collect the coin
         collectButton.setOnClickListener {
@@ -232,6 +236,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             val user: User = dataSnapshot.getValue(User::class.java)!!
             displayName.text = user.displayName
             status.text = user.status
+
             //write the map saved in database to local file.
             applicationContext.openFileOutput("coinzmap.geojson", Context.MODE_PRIVATE).use {
                 it.write(user.map.toByteArray())
@@ -243,7 +248,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             dbRef.child("users").child(auth.currentUser?.uid.toString()).child("rates").setValue(rateoftoday)
 
             //reset user ratio to 1.0 as the booster is expired if date change
-            dbRef.child("users").child(auth.currentUser?.uid.toString()).child("ratio").setValue(1.0)
+            dbRef.child("users").child(auth.currentUser?.uid.toString()).child("ratio").setValue(1.0+user.VIPlevel/2)
 
             //reset the saving limits to 0 if date change
             dbRef.child("users").child(auth.currentUser?.uid.toString()).child("limit").setValue(0.0)
@@ -264,6 +269,18 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
                     displayName.text = user.displayName
                     status.text = user.status
                     userCoins = user.userCoins
+                    //update vip icon with user's vip level.
+                    if (user.VIPlevel==1){
+                        vipicon.setImageResource(R.drawable.vip1)
+                    }else if(user.VIPlevel==2){
+                        vipicon.setImageResource(R.drawable.vip2)
+                    }else if (user.VIPlevel==3){
+                        vipicon.setImageResource(R.drawable.vip3)
+                    }else if (user.VIPlevel==4){
+                        vipicon.setImageResource(R.drawable.vip4)
+                    }else{
+
+                    }
                 }
             }
             override fun onCancelled(error: DatabaseError) { }
