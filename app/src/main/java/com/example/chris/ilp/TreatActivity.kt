@@ -1,6 +1,7 @@
 package com.example.chris.ilp
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
@@ -21,14 +22,18 @@ class TreatActivity:AppCompatActivity(){
     private lateinit var dbRef: DatabaseReference
 
     private lateinit var treatingcoin : TextView
+    private lateinit var remainChances : TextView
     private lateinit var uidfortreat : EditText
     private lateinit var savetobank : Button
     private lateinit var sendtoothers : Button
     private lateinit var returntowallet : Button
     private var userCoins :String = "for saving user coins"
     private var sendusercoin:String = "for receiving user coins"
+    private var userGifts :String = "for saving user gifts"
     private var ratio : Double = 1.0
+    private var limit : Double = 0.0
     private var index : Int = 0
+    private var cointype = ""
     private var rates : String = ""
     private var usergold : Double = 0.0
     //variable result for judging UID is valid or not.
@@ -46,6 +51,7 @@ class TreatActivity:AppCompatActivity(){
         //create views for layout.
         treatingcoin = findViewById<TextView>(R.id.treatingcoin)
         uidfortreat = findViewById<EditText>(R.id.uidfortreat)
+        remainChances = findViewById<TextView>(R.id.remainChances)
         savetobank = findViewById<Button>(R.id.savetobank)
         sendtoothers = findViewById<Button>(R.id.sendtoother)
         returntowallet = findViewById<Button>(R.id.returntowallet)
@@ -55,6 +61,7 @@ class TreatActivity:AppCompatActivity(){
         if (extras != null) {
             index = extras.getInt("key")
             //The key argument here must match that used in the wallet activity
+            cointype = extras.getString("type")
         }
 
         //load the data of chosen coin and show it to the screen
@@ -81,9 +88,19 @@ class TreatActivity:AppCompatActivity(){
         sendtoothers.setOnClickListener {
             if (uidfortreat.text.length!=28) {
                 Toast.makeText(this@TreatActivity, "Please enter a valid uid!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
             else if (!this.result) {
                 Toast.makeText(this@TreatActivity, "uid not exist!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            else if(uidfortreat.text.toString()==auth.currentUser?.uid.toString()){
+                Toast.makeText(this@TreatActivity, "Can not send to yourself!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            else if(cointype=="gift"){
+                Toast.makeText(this@TreatActivity, "Can not send your gift to other!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
             else {
                 Toast.makeText(this@TreatActivity, "Success!", Toast.LENGTH_SHORT).show()
@@ -102,7 +119,7 @@ class TreatActivity:AppCompatActivity(){
                 //add the chosen coin to this user
                 sendcoins!!.add(targetcoin)
                 val newsenduserCoins = FeatureCollection.fromFeatures(sendcoins)
-                dbRef.child("users").child(uidfortreat.text.toString()).child("userCoins").setValue(newsenduserCoins.toJson())
+                dbRef.child("users").child(uidfortreat.text.toString()).child("gift").setValue(newsenduserCoins.toJson())
             }
             //back to wallet activity if success.
             val intenttowallet = Intent(this@TreatActivity,walletActivity::class.java)
@@ -112,10 +129,19 @@ class TreatActivity:AppCompatActivity(){
         //add button listener for saving the coin
         savetobank.setOnClickListener {
             //call the helper function saveToBank and intent to wallet activity if success.
-            saveToBank()
-            Toast.makeText(this@TreatActivity,"Saved to Bank!",Toast.LENGTH_LONG).show()
-            val intenttowallet = Intent(this@TreatActivity,walletActivity::class.java)
-            startActivity(intenttowallet)
+            if(limit<25){
+                saveToBank()
+                Toast.makeText(this@TreatActivity,"Saved to Bank!",Toast.LENGTH_LONG).show()
+                val intenttowallet = Intent(this@TreatActivity,walletActivity::class.java)
+                startActivity(intenttowallet)
+            }
+            //if the limit reach 25 means no remaining chances for saving to bank thus disable the button.
+            else{
+                savetobank.isClickable = false
+                Toast.makeText(this@TreatActivity,"Reached the limit!",Toast.LENGTH_LONG).show()
+                savetobank.setBackgroundColor(Color.GRAY)
+                return@setOnClickListener
+            }
         }
     }
 
@@ -128,6 +154,15 @@ class TreatActivity:AppCompatActivity(){
                     userCoins = user.userCoins
                     rates = user.rates
                     usergold = user.gold
+                    ratio = user.ratio
+                    userGifts = user.gift
+
+                    //get the limit from database and print to screen
+                    limit = user.limit
+                    val remain = 25-limit
+                    val remaintext = "You have $remain chances for saving!"
+                    remainChances.text = remaintext
+
                     val geoCoins = FeatureCollection.fromJson(user.userCoins)
                     val coins = geoCoins.features()
                     val targetfeature = coins!!.get(index)
@@ -146,22 +181,48 @@ class TreatActivity:AppCompatActivity(){
     //helper function to save the target coin to bank in form of gold.
     private fun saveToBank(){
         //create JSON object to get the value and currency of the target coin from whole list of coins.
-        val geoCoins = FeatureCollection.fromJson(this.userCoins)
-        val coins = geoCoins.features()
-        val targetcoin = coins!![index]
-        val value = targetcoin.properties()!!.get("value").asDouble
-        val type = targetcoin.properties()!!.get("currency").asString
+        if(cointype=="userCoins") {
+            val geoCoins = FeatureCollection.fromJson(this.userCoins)
+            val coins = geoCoins.features()
+            val targetcoin = coins!![index]
+            val value = targetcoin.properties()!!.get("value").asDouble
+            val type = targetcoin.properties()!!.get("currency").asString
 
-        //create JSON object to get the rates of 4 types of currency.
-        val ratesJson = JSONObject(rates)
-        val thisrate = ratesJson.get(type).toString().toDouble()
-        val gold = value * thisrate * ratio + usergold
-        dbRef.child("users").child(auth.currentUser?.uid.toString()).child("gold").setValue(gold)
+            //create JSON object to get the rates of 4 types of currency.
+            val ratesJson = JSONObject(rates)
+            val thisrate = ratesJson.get(type).toString().toDouble()
+            val gold = value * thisrate * ratio + usergold
+            dbRef.child("users").child(auth.currentUser?.uid.toString()).child("gold").setValue(gold)
 
-        //we need to remove the coin after transferred to gold and delete from the database.
-        coins.removeAt(index)
-        val newuserCoins = FeatureCollection.fromFeatures(coins)
-        dbRef.child("users").child(auth.currentUser?.uid.toString()).child("userCoins").setValue(newuserCoins.toJson())
+            //we need to remove the coin after transferred to gold and delete from the database.
+            coins.removeAt(index)
+            val newuserCoins = FeatureCollection.fromFeatures(coins)
+            dbRef.child("users").child(auth.currentUser?.uid.toString()).child("userCoins").setValue(newuserCoins.toJson())
+
+
+            limit += 1
+            dbRef.child("users").child(auth.currentUser?.uid.toString()).child("limit").setValue(limit)
+        }
+        //same method for saving gift to bank but no need to +1 to limit
+        else{
+            val geoGifts = FeatureCollection.fromJson(this.userGifts)
+            val gifts = geoGifts.features()
+            val targetgift = gifts!![index]
+
+            val giftvalue = targetgift.properties()!!.get("value").asDouble
+            val gifttype = targetgift.properties()!!.get("currency").asString
+
+            val ratesJson = JSONObject(rates)
+            val thisrate = ratesJson.get(gifttype).toString().toDouble()
+            val gold = giftvalue * thisrate * ratio + usergold
+            dbRef.child("users").child(auth.currentUser?.uid.toString()).child("gold").setValue(gold)
+
+            gifts.removeAt(index)
+            val newuserGifts = FeatureCollection.fromFeatures(gifts)
+            dbRef.child("users").child(auth.currentUser?.uid.toString()).child("gift").setValue(newuserGifts.toJson())
+
+
+        }
     }
 
     //helper function to check if the UID in the edit text exist.
@@ -173,7 +234,7 @@ class TreatActivity:AppCompatActivity(){
                     val user: User = dataSnapshot.getValue(User::class.java)!!
                     result = true
                     //load the user data of this UID in edit text.
-                    sendusercoin = user.userCoins
+                    sendusercoin = user.gift
                 }
                 else{
                     result = false

@@ -17,8 +17,10 @@ class walletActivity:AppCompatActivity(){
     private lateinit var rateOfToday:TextView
     private lateinit var walletLayout: LinearLayout
     private lateinit var listView: ListView
+    private lateinit var listofgifts : ListView
     private var rates = ""
     private var listofcoins = ArrayList<String>()
+    private var giftslist = ArrayList<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +31,7 @@ class walletActivity:AppCompatActivity(){
         rateOfToday = findViewById<TextView>(id.rateOfToday)
         walletLayout = findViewById<LinearLayout>(id.walletLayout)
         listView = findViewById<ListView>(id.listview)
+        listofgifts = findViewById<ListView>(id.listofgifts)
 
 
         //set up fire base database
@@ -39,12 +42,21 @@ class walletActivity:AppCompatActivity(){
         //call loadData function to load current user's data such as user Coins collected.
         loadData(auth.currentUser?.uid.toString())
 
-        //add listener to pass index of target coin to treat Activity
+        //add listener to pass index and type of target coin to treat Activity
         listView.onItemClickListener = AdapterView.OnItemClickListener { p0, p1, p2, p3 ->
             val value = p2
             val i = Intent(this@walletActivity, TreatActivity::class.java)
+            i.putExtra("type","userCoins")
             i.putExtra("key", value)
             startActivity(i)
+        }
+
+        //add listener to pass index and type of selected gift to treat activity
+        listofgifts.onItemClickListener = AdapterView.OnItemClickListener{ p0,p1,p2,p3 ->
+            val intentToTreat = Intent(this@walletActivity, TreatActivity::class.java)
+            intentToTreat.putExtra("type","gift")
+            intentToTreat.putExtra("key",p2)
+            startActivity(intentToTreat)
         }
 
         //click listener to go back main activity
@@ -80,6 +92,21 @@ class walletActivity:AppCompatActivity(){
                     //create adapter to display.
                     val arrayAdapter = ArrayAdapter(this@walletActivity,android.R.layout.simple_list_item_1,listofcoins)
                     listView.adapter = arrayAdapter
+
+                    //create a collection to pass all value and type of gifts to list of Gifts
+                    val geoGifts = FeatureCollection.fromJson(user.gift)
+                    val gifts = geoGifts.features()
+
+                    if (gifts != null) {
+                        for (gift in gifts){
+                            val gifttype = gift.properties()!!.get("currency").toString()
+                            val giftvalue = gift.properties()!!.get("value").toString()
+                            giftslist.add(gifttype+":"+giftvalue)
+                        }
+                    }
+                    //create adapter to display.
+                    val arrayAdapterforgifts = ArrayAdapter(this@walletActivity,android.R.layout.simple_list_item_1,giftslist)
+                    listofgifts.adapter = arrayAdapterforgifts
 
 
                 }

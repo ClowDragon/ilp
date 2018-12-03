@@ -136,6 +136,11 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             }
         }
 
+        store.setOnClickListener {
+            val intentToStore = Intent(this@MainActivity,StoreActivity::class.java)
+            startActivity(intentToStore)
+        }
+
         //intent to wallet activity.
         wallet.setOnClickListener {
             val intentToWallet = Intent(this@MainActivity,walletActivity::class.java)
@@ -235,6 +240,12 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             val jsonObject = JSONObject(user.map)
             val rateoftoday = jsonObject.getString("rates")
             dbRef.child("users").child(auth.currentUser?.uid.toString()).child("rates").setValue(rateoftoday)
+
+            //reset user ratio to 1.0 as the booster is expired if date change
+            dbRef.child("users").child(auth.currentUser?.uid.toString()).child("ratio").setValue(1.0)
+
+            //reset the saving limits to 0 if date change
+            dbRef.child("users").child(auth.currentUser?.uid.toString()).child("limit").setValue(0.0)
             }
         }
             override fun onCancelled(error: DatabaseError) { }

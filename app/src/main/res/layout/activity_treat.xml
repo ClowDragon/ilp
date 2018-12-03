@@ -61,7 +61,7 @@
         android:layout_width="319dp"
         android:layout_height="70dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="72dp"
+        android:layout_marginTop="40dp"
         android:background="@color/colorAccent"
         android:paddingLeft="30dp"
         android:paddingTop="10dp"
@@ -77,10 +77,20 @@
         android:id="@+id/textView2"
         android:layout_width="183dp"
         android:layout_height="36dp"
-        android:layout_marginTop="152dp"
+        android:layout_marginTop="128dp"
         android:layout_marginEnd="8dp"
         android:text="Hint: Your UID is shown on the left-top corner of map!"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/remainChances"
+        android:layout_width="146dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginBottom="108dp"
+        android:text="remain times of save"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </android.support.constraint.ConstraintLayout>
