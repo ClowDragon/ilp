@@ -19,7 +19,7 @@ class EmailValidatorTest {
     @Test
     @Throws(Exception::class)
     fun emailValidator_CorrectEmailSimple_ReturnsTrue() {
-        val email = "chris@123.com"
+        val email = "s1688223@sms.ed.ac.uk"
         Truth.assertThat(email_pattern.matcher(email).matches()).isTrue()
     }
 }
