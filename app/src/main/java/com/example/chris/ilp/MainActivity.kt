@@ -1,5 +1,6 @@
 package com.example.chris.ilp
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -126,7 +127,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
 
 
         //Button for collect the coin
-        collectButton.setOnClickListener {
+        collectButton.setOnClickListener { _ ->
             //import the user coins value from database
             loadNameAndStatus(auth.currentUser?.uid.toString())
             collectCoin()
@@ -168,6 +169,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         }
     }
 
+    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     @SuppressWarnings("MissingPermission")
     override fun onStart() {
         super.onStart()
@@ -196,7 +198,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
 
         val editor = settings2.edit()
         editor.putString("lastDownloadDate", dateInString)
-
+        editor.apply()
     }
 
     //override onStop function to stop the mapView functions.
@@ -350,6 +352,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     }
 
     //important helper function collect coin
+    @SuppressLint("MissingPermission")
     private fun collectCoin(){
         val currentLocation = locationEngine?.lastLocation
         val latitudeOfcurrentPoint = currentLocation?.latitude
@@ -413,6 +416,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     }
 
     //initialise mapbox engines.
+    @SuppressLint("MissingPermission")
     private fun initializeLocationEngine(){
         locationEngine = LocationEngineProvider(this).obtainBestLocationEngineAvailable()
         locationEngine?.priority = LocationEnginePriority.HIGH_ACCURACY
@@ -428,6 +432,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun initializeLocationLayer(){
         locationLayerPlugin = LocationLayerPlugin(mapView,map,locationEngine)
         locationLayerPlugin?.setLocationLayerEnabled(true)
@@ -464,6 +469,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         }
     }
 
+    @SuppressLint("MissingPermission")
     override fun onConnected() {
         locationEngine?.requestLocationUpdates()
     }

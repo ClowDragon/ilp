@@ -39,6 +39,7 @@ class TreatActivity:AppCompatActivity(){
     //variable result for judging UID is valid or not.
     private var result = false
 
+    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_treat)

@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity
 import android.widget.Button
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import kotlinx.coroutines.delay
 
 class startActivity : AppCompatActivity() {
 
@@ -21,7 +20,6 @@ class startActivity : AppCompatActivity() {
         isLogin(userId.toString())
         super.onCreate(savedInstanceState)
         setContentView(R.layout.acticity_start)
-        suspend {  delay(timeMillis = 2000) }
         startbutton = findViewById<Button>(R.id.startingbutton)
 
         startbutton.setOnClickListener {
@@ -29,6 +27,11 @@ class startActivity : AppCompatActivity() {
             startActivity(intenttologin)
         }
 
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Thread.sleep(2000)
     }
 
     //helper function to check if the user status is logged in or logged out.
