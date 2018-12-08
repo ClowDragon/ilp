@@ -4,7 +4,20 @@
     tools:context="com.example.chris.ilp.startActivity"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@color/colorPrimary"
+    android:background="@color/mapboxWhite"
     android:gravity="center"
     android:orientation="vertical"
-    android:padding="@dimen/activity_horizontal_margin"/>
+    android:padding="@dimen/activity_horizontal_margin">
+
+
+    <pl.droidsonroids.gif.GifImageView
+        android:layout_width="match_parent"
+        android:layout_height="269dp"
+        android:src="@drawable/loading" />
+
+    <Button
+        android:id="@+id/startingbutton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Starting game!" />
+</LinearLayout>

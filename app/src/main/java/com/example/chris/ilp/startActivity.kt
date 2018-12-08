@@ -3,11 +3,14 @@ package com.example.chris.ilp
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.widget.Button
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import kotlinx.coroutines.delay
 
 class startActivity : AppCompatActivity() {
 
+    private lateinit var startbutton:Button
     private lateinit var auth:FirebaseAuth
     private lateinit var database:FirebaseDatabase
 
@@ -17,8 +20,16 @@ class startActivity : AppCompatActivity() {
         val userId = auth.currentUser?.uid
         isLogin(userId.toString())
         super.onCreate(savedInstanceState)
-            
+        setContentView(R.layout.acticity_start)
+        suspend {  delay(timeMillis = 2000) }
+        startbutton = findViewById<Button>(R.id.startingbutton)
+
+        startbutton.setOnClickListener {
+            val intenttologin = Intent(this@startActivity,LoginActivity::class.java)
+            startActivity(intenttologin)
         }
+
+    }
 
     //helper function to check if the user status is logged in or logged out.
     private fun isLogin(userId: String){

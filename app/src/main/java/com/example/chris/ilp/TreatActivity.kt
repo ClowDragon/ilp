@@ -163,14 +163,25 @@ class TreatActivity:AppCompatActivity(){
                     val remaintext = "You have $remain chances for saving!"
                     remainChances.text = remaintext
 
-                    val geoCoins = FeatureCollection.fromJson(user.userCoins)
-                    val coins = geoCoins.features()
-                    val targetfeature = coins!!.get(index)
-                    //updating text on the screen to information of target coin.
-                    val text1 = targetfeature.properties()!!.get("currency").toString()
-                    val text2 = targetfeature.properties()!!.get("value").toString()
-                    val combinedtext = "Coin type: "+text1 + "\n" + "Coin value: " + text2
-                    treatingcoin.text = combinedtext
+                    if (cointype=="userCoins"){
+                        val geoCoins = FeatureCollection.fromJson(user.userCoins)
+                        val coins = geoCoins.features()
+                        val targetfeature = coins!!.get(index)
+                        //updating text on the screen to information of target coin.
+                        val text1 = targetfeature.properties()!!.get("currency").toString()
+                        val text2 = targetfeature.properties()!!.get("value").toString()
+                        val combinedtext = "Coin type: "+text1 + "\n" + "Coin value: " + text2
+                        treatingcoin.text = combinedtext
+                    }else{
+                        val geoCoins = FeatureCollection.fromJson(user.gift)
+                        val coins = geoCoins.features()
+                        val targetfeature = coins!!.get(index)
+                        //updating text on the screen to information of target coin.
+                        val text1 = targetfeature.properties()!!.get("currency").toString()
+                        val text2 = targetfeature.properties()!!.get("value").toString()
+                        val combinedtext = "Coin type: "+text1 + "\n" + "Coin value: " + text2
+                        treatingcoin.text = combinedtext
+                    }
                 }
             }
             override fun onCancelled(error: DatabaseError) { }

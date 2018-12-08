@@ -21,6 +21,7 @@ class StoreActivity: AppCompatActivity(){
     private lateinit var vipLevelText :TextView
     private lateinit var goldboosterbutton :Button
     private lateinit var upgradeVIPlevel :Button
+    private lateinit var resetlimit : Button
     private lateinit var backtogameimageButton: ImageButton
     private var userRatio = 1.0
     private var userGold = 0.0
@@ -39,6 +40,7 @@ class StoreActivity: AppCompatActivity(){
         vipLevelText = findViewById<TextView>(R.id.vipleveletext)
         goldboosterbutton = findViewById<Button>(R.id.goldboosterbutton)
         upgradeVIPlevel = findViewById<Button>(R.id.viplevelupbutton)
+        resetlimit = findViewById(R.id.nolimitbutton)
         backtogameimageButton = findViewById<ImageButton>(R.id.backtogameimageButton)
 
         //load user data from database to screen using helper function loadUserRatio
@@ -69,6 +71,20 @@ class StoreActivity: AppCompatActivity(){
             }else{
                 Toast.makeText(this@StoreActivity,"You have reached the highest VIP level!",Toast.LENGTH_LONG).show()
                 return@setOnClickListener
+            }
+        }
+
+        //using 2000 gold to reset limit to 0.
+        resetlimit.setOnClickListener{
+            if (userGold<2000){
+                Toast.makeText(this@StoreActivity,"Not enough gold!",Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+            else{
+                Toast.makeText(this@StoreActivity,"Reset your limit successfully!",Toast.LENGTH_LONG).show()
+                dbRef.child("users").child(auth.currentUser?.uid.toString()).child("gold").setValue(userGold-2000)
+                dbRef.child("users").child(auth.currentUser?.uid.toString()).child("limit").setValue(0)
+                loadUserRatio(auth.currentUser?.uid.toString())
             }
         }
 

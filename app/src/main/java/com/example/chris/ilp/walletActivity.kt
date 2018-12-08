@@ -43,16 +43,15 @@ class walletActivity:AppCompatActivity(){
         loadData(auth.currentUser?.uid.toString())
 
         //add listener to pass index and type of target coin to treat Activity
-        listView.onItemClickListener = AdapterView.OnItemClickListener { p0, p1, p2, p3 ->
-            val value = p2
+        listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, p2, _ ->
             val i = Intent(this@walletActivity, TreatActivity::class.java)
             i.putExtra("type","userCoins")
-            i.putExtra("key", value)
+            i.putExtra("key", p2)
             startActivity(i)
         }
 
         //add listener to pass index and type of selected gift to treat activity
-        listofgifts.onItemClickListener = AdapterView.OnItemClickListener{ p0,p1,p2,p3 ->
+        listofgifts.onItemClickListener = AdapterView.OnItemClickListener{ _,_,p2,_ ->
             val intentToTreat = Intent(this@walletActivity, TreatActivity::class.java)
             intentToTreat.putExtra("type","gift")
             intentToTreat.putExtra("key",p2)
@@ -86,7 +85,7 @@ class walletActivity:AppCompatActivity(){
                         for (coin in coins){
                             val text1 = coin.properties()!!.get("currency").toString()
                             val text2 = coin.properties()!!.get("value").toString()
-                            listofcoins.add(text1+":"+text2)
+                            listofcoins.add("$text1:$text2")
                         }
                     }
                     //create adapter to display.
@@ -101,7 +100,7 @@ class walletActivity:AppCompatActivity(){
                         for (gift in gifts){
                             val gifttype = gift.properties()!!.get("currency").toString()
                             val giftvalue = gift.properties()!!.get("value").toString()
-                            giftslist.add(gifttype+":"+giftvalue)
+                            giftslist.add("$gifttype:$giftvalue")
                         }
                     }
                     //create adapter to display.

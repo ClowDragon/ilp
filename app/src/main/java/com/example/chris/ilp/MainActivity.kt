@@ -71,8 +71,8 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     private val dateInString = date.toString("yyyy/MM/dd")
     private val mapURL = "http://homepages.inf.ed.ac.uk/stg/coinz/"+dateInString+"/coinzmap.geojson"
 
-    val runner = DownloadCompleteRunner
-    val myTask = DownloadFileTask(runner)
+    private val runner = DownloadCompleteRunner
+    private val myTask = DownloadFileTask(runner)
 
     private var userCoins :String = "{\n"+"\"type\":\"FeatureCollection\",\n"+"\"features\":[]\n"+"}"
 
@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         val lastdate = settings.getString("lastDownloadDate","")
 
         //check if the last data match the current date, if not update map to database using execute(URL)
-        if (!lastdate.equals(dateInString)) {
+        if (lastdate != dateInString) {
             myTask.execute(mapURL)
             //create empty local geojson file.
             val file = File(applicationContext.filesDir, "coinzmap" + ".geojson")
@@ -183,7 +183,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         mapView.onStart()
 
         // call is Login function below if we need an update.
-        if (!lastdate.equals(dateInString)) {
+        if (lastdate != dateInString) {
             isLogin()
         }
 
@@ -270,16 +270,14 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
                     status.text = user.status
                     userCoins = user.userCoins
                     //update vip icon with user's vip level.
-                    if (user.VIPlevel==1){
-                        vipicon.setImageResource(R.drawable.vip1)
-                    }else if(user.VIPlevel==2){
-                        vipicon.setImageResource(R.drawable.vip2)
-                    }else if (user.VIPlevel==3){
-                        vipicon.setImageResource(R.drawable.vip3)
-                    }else if (user.VIPlevel==4){
-                        vipicon.setImageResource(R.drawable.vip4)
-                    }else{
+                    when {
+                        user.VIPlevel==1 -> vipicon.setImageResource(R.drawable.vip1)
+                        user.VIPlevel==2 -> vipicon.setImageResource(R.drawable.vip2)
+                        user.VIPlevel==3 -> vipicon.setImageResource(R.drawable.vip3)
+                        user.VIPlevel==4 -> vipicon.setImageResource(R.drawable.vip4)
+                        else -> {
 
+                        }
                     }
                 }
             }
@@ -343,8 +341,8 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
                 val x = LatLng(latitude,longitude)
                 //here i load my specific image of marker as a coin.
                 val bitmap = BitmapFactory.decodeResource(applicationContext.resources,R.drawable.coin_marker)
-                val resized_bitmap = Bitmap.createScaledBitmap(bitmap,100,100,false)
-                val coinicon = IconFactory.recreate("coin", resized_bitmap)
+                val resizedbitmap = Bitmap.createScaledBitmap(bitmap,100,100,false)
+                val coinicon = IconFactory.recreate("coin", resizedbitmap)
                 map.addMarker(MarkerOptions().position(x).icon(coinicon))
 
             }
