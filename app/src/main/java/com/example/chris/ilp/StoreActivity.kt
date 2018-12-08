@@ -103,7 +103,7 @@ class StoreActivity: AppCompatActivity(){
         }
     }
 
-
+    //helper function to load or update user information and show to the screen.
     private fun loadUserRatio(userId: String){
         val dataListener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
