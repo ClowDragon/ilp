@@ -116,7 +116,7 @@ class StoreActivity: AppCompatActivity(){
                     val levelText = "VIP "+user.VIPlevel
                     vipLevelText.text = levelText
 
-                    val textofgold = "Your gold: "+user.gold.toString()
+                    val textofgold = "Your gold: "+"%.3f".format(user.gold)
                     usergold.text = textofgold
 
                     val textofratio = "Your exchange ratio is : " + user.ratio.toString()

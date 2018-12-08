@@ -15,11 +15,13 @@ class startActivity : AppCompatActivity() {
 
     //Start activity to check the status of current user thus intent to main or login activity.
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         auth = FirebaseAuth.getInstance()
         val userId = auth.currentUser?.uid
-        isLogin(userId.toString())
-        super.onCreate(savedInstanceState)
         setContentView(R.layout.acticity_start)
+        Thread.sleep(2000)
+        isLogin(userId.toString())
+
         startbutton = findViewById<Button>(R.id.startingbutton)
 
         startbutton.setOnClickListener {
@@ -29,10 +31,6 @@ class startActivity : AppCompatActivity() {
 
     }
 
-    override fun onStart() {
-        super.onStart()
-        Thread.sleep(2000)
-    }
 
     //helper function to check if the user status is logged in or logged out.
     private fun isLogin(userId: String){
