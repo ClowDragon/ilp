@@ -19,7 +19,6 @@ class startActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         val userId = auth.currentUser?.uid
         setContentView(R.layout.acticity_start)
-        Thread.sleep(2000)
         isLogin(userId.toString())
 
         startbutton = findViewById<Button>(R.id.startingbutton)
@@ -30,7 +29,6 @@ class startActivity : AppCompatActivity() {
         }
 
     }
-
 
     //helper function to check if the user status is logged in or logged out.
     private fun isLogin(userId: String){
