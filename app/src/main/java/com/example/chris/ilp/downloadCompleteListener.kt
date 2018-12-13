@@ -1,5 +1,5 @@
 package com.example.chris.ilp
-
+//interface complete listener for downloadFileTask initialisation.
 interface DownloadCompleteListener {
     fun downloadComplete(result: String)
 }

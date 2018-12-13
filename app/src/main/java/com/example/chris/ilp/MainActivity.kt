@@ -173,7 +173,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     @SuppressWarnings("MissingPermission")
     override fun onStart() {
         super.onStart()
-
+        //get the date saved in preference file
         val settings2 = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
         val lastdate = settings2.getString("lastDownloadDate","")
 
@@ -223,7 +223,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     //function is login to load data from database to local file.
     private fun isLogin(){
         val intent = Intent(this@MainActivity, LoginActivity::class.java)
-
+        //call loadData function below
         auth.currentUser?.uid?.let { loadData(it)  } ?: startActivity(intent)
 
     }
@@ -259,10 +259,11 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             override fun onCancelled(error: DatabaseError) { }
 
         }
+        //add listener to child users thus we can visit data of all users.
         database.reference.child("users").child(userId).addListenerForSingleValueEvent(dataListener)
     }
 
-    //save helper function as above to update name status and userCoins of current user.
+    //same helper function as above to update name status and userCoins of current user.
     private fun loadNameAndStatus(userId: String){
         val dataListener = object : ValueEventListener{
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -404,7 +405,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     }
 
 
-    //the several basic functions initialise the mapbox.
+    //the several basic functions initialise the mapbox map.
     private fun enableLocation(){
         if(PermissionsManager.areLocationPermissionsGranted(this)){
             initializeLocationEngine()
@@ -440,6 +441,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         locationLayerPlugin?.renderMode = RenderMode.NORMAL
     }
 
+    //set camera location and zoom it.
     private fun setCameraPosition(location: Location){
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(
                 LatLng(location.latitude,location.longitude),15.0))

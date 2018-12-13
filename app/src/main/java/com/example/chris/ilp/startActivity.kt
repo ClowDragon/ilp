@@ -15,6 +15,7 @@ class startActivity : AppCompatActivity() {
 
     //Start activity to check the status of current user thus intent to main or login activity.
     override fun onCreate(savedInstanceState: Bundle?) {
+        //basic set up
         super.onCreate(savedInstanceState)
         auth = FirebaseAuth.getInstance()
         val userId = auth.currentUser?.uid
