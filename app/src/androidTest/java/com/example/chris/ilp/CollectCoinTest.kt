@@ -8,6 +8,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class CollectCoinTest {
+    //my database is set up as a object of user so I create a local userCoins which is a Feature Collection.
     private var userCoins :String = "{\n"+"\"type\":\"FeatureCollection\",\n"+"\"features\":[]\n"+"}"
     @Test
     @Throws(Exception::class)

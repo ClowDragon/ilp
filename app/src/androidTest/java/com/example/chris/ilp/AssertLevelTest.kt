@@ -10,6 +10,8 @@ private var VIPlevel = 4
 
 @RunWith(AndroidJUnit4::class)
 class AssertLevelTest {
+    //my database is set up as a object of user so I create a local user object instead of
+    //access my database.
     @Test
     @Throws(Exception::class)
     fun checkGold() {

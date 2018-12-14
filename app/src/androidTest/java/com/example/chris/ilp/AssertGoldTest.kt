@@ -15,6 +15,9 @@ private var userGold = 100.0
 
 @RunWith(AndroidJUnit4::class)
 class AssertGoldTest {
+    //my database is set up as a object of user so I create a local user object instead of
+    //access my database.
+
     @Test
     @Throws(Exception::class)
     fun checkGold() {
