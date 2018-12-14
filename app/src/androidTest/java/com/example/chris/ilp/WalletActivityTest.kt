@@ -29,7 +29,7 @@ class WalletActivityTest {
     }
 
     @Test
-    fun storeActivityDisplay() {
+    fun walletActivityDisplay() {
         onView(ViewMatchers.withId(R.id.walletButton)).perform(ViewActions.click())
 
         Espresso.onView(ViewMatchers.withId(R.id.textView)).check(ViewAssertions.matches(ViewMatchers.withText("Your Coins")))

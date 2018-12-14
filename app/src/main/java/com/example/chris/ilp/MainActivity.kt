@@ -97,19 +97,15 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         collectButton = findViewById<Button>(id.collectButton)
         currentLocationButton = findViewById<Button>(id.currentLocationButton)
 
-        //get the last date of updating map from the preferences file.
-        val settings = getSharedPreferences(preferencesFile, Context.MODE_PRIVATE)
-        val lastdate = settings.getString("lastDownloadDate","")
-
         //check if the last data match the current date, if not update map to database using execute(URL)
-        if (lastdate != dateInString) {
+
             myTask.execute(mapURL)
             //create empty local geojson file.
             val file = File(applicationContext.filesDir, "coinzmap" + ".geojson")
-            if(!file.exists()){
+            if (!file.exists()) {
                 file.createNewFile()
             }
-        }
+
 
         //listener to sign out from current user.
         logout.setOnClickListener {
@@ -162,11 +158,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         Mapbox.getInstance(applicationContext,getString(R.string.access_token))
         mapView = findViewById(R.id.mapView)
         mapView.onCreate(savedInstanceState)
-        mapView.getMapAsync { mapboxMap ->
-            map = mapboxMap
-            enableLocation()
-            addMarkers()
-        }
+
     }
 
     @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
@@ -184,10 +176,19 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
         //start the map function.
         mapView.onStart()
 
-        // call is Login function below if we need an update.
+
+
+        // call loadData function below if we need an update.
         if (lastdate != dateInString) {
-            isLogin()
+            loadData(auth.currentUser?.uid.toString())
         }
+
+        mapView.getMapAsync { mapboxMap ->
+            map = mapboxMap
+            enableLocation()
+            addMarkers()
+        }
+
 
         loadNameAndStatus(auth.currentUser?.uid.toString())
 
@@ -220,14 +221,6 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     }
 
 
-    //function is login to load data from database to local file.
-    private fun isLogin(){
-        val intent = Intent(this@MainActivity, LoginActivity::class.java)
-        //call loadData function below
-        auth.currentUser?.uid?.let { loadData(it)  } ?: startActivity(intent)
-
-    }
-
 
     //load the data from fire base database using value event listener.
     private fun loadData(userId: String){
@@ -238,6 +231,7 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
             val user: User = dataSnapshot.getValue(User::class.java)!!
             displayName.text = user.displayName
             status.text = user.status
+            userCoins = user.userCoins
 
             //write the map saved in database to local file.
             applicationContext.openFileOutput("coinzmap.geojson", Context.MODE_PRIVATE).use {
@@ -474,6 +468,16 @@ class MainActivity : AppCompatActivity() ,PermissionsListener,LocationEngineList
     @SuppressLint("MissingPermission")
     override fun onConnected() {
         locationEngine?.requestLocationUpdates()
+    }
+
+    interface DownloadCompleteListener {
+        fun downloadComplete(result: String)
+    }
+    object DownloadCompleteRunner : DownloadCompleteListener {
+        var result : String? = "test1"
+        override fun downloadComplete(result: String) {
+            this.result = result
+        }
     }
 
 }

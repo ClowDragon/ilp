@@ -29,7 +29,6 @@ class MainActivityEspressoTest {
 
     @Test
     fun mainActivityDisplay() {
-        Espresso.onView(ViewMatchers.withId(R.id.name_text)).check(ViewAssertions.matches(ViewMatchers.withText("")))
         Espresso.onView(ViewMatchers.withId(R.id.status_text)).check(ViewAssertions.matches(ViewMatchers.withText("signed_in")))
     }
 }

@@ -1,24 +1,18 @@
 package com.example.chris.ilp
 
+import android.content.Context
 import android.os.AsyncTask
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
 
-class DownloadFileTask(private val caller : DownloadCompleteListener) :
+class DownloadFileTask(private val caller : MainActivity.DownloadCompleteListener) :
         AsyncTask<String, Void, String>() {
-
-
-    private lateinit var auth: FirebaseAuth
-    private lateinit var database: FirebaseDatabase
-    private lateinit var dbRef: DatabaseReference
-
-
 
     override fun doInBackground(vararg urls: String): String = try {
         loadFileFromNetwork(urls[0])
@@ -26,17 +20,15 @@ class DownloadFileTask(private val caller : DownloadCompleteListener) :
         "Unable to load content. Check your network connection"
     }
     private fun loadFileFromNetwork(urlString: String): String {
-        auth = FirebaseAuth.getInstance()
-        database = FirebaseDatabase.getInstance()
-        dbRef = database.reference
+        val auth = FirebaseAuth.getInstance()
+        val dbRef = FirebaseDatabase.getInstance().reference
         val stream : InputStream = downloadUrl(urlString)
         /* read the input stream and save it to database. */
-        val result = stream.bufferedReader().use {
-            it.readText()
-        }
-        val userId = auth.currentUser?.uid
-        dbRef.child("users").child(userId.toString()).child("map").setValue(result)
-        return result
+        val allText = stream.bufferedReader().use(BufferedReader::readText)
+        val result = StringBuilder()
+        result.append(allText)
+        dbRef.child("users").child(auth.currentUser?.uid.toString()).child("map").setValue(result.toString())
+        return result.toString()
     }
 
     @Throws(IOException::class)
