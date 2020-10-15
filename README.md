@@ -1,5 +1,4 @@
 # ilp Coinz
-ilp coursework <br>
 s1688223 <br>
 chris jiang <br>
 Using the Realtime Database.<br>
